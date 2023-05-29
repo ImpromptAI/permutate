@@ -1,5 +1,5 @@
 # Permutate
-![Alt text](docs/logo.png?raw=true "Title")
+![Alt text](https://github.com/LegendaryAI/permutate/blob/main/docs/permutate-logo.png)
 ## Permutate is an automated testing framework for LLM Plugins. 
 
 ### ChatGPT Ignited LLM Plugins
@@ -13,7 +13,15 @@ From a software quality perspective, several common problems surfaced:
 
 Ultimately, plugin developers chose to remove the bulk of their features just to get basic functions to run correctly. 🙁
 
+  
+---
+  
+![Alt text](https://github.com/LegendaryAI/permutate/blob/main/docs/permutate-overview.png) 
 
+
+---
+  
+  
 ### Introducing Permutate
 Permutate is an automated testing framework for LLM Plugins. 
 
@@ -24,6 +32,7 @@ Permutate allows development teams to:
 <li>Use open source software (Permutate) to execute the tests</li>
 <li>See the results of individual test cases as well as summary statistics</li>
 </ul>
+
 
 #### The Permutation Problem 
 When users give prompts (instructions to an LLM via chat, etc.), they use a variety of ways of describing what they want. Each sentence variation might work or fail. The goal is to get as many of them to succeed as possible. 
@@ -54,3 +63,5 @@ Until OpenAI makes their Tool Selector service available to the public, you have
 </ol>
 
 ### Getting started
+(THIS PROJECT IS NOT RELEASED YET).
+More docs coming soon!

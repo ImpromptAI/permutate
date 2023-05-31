@@ -144,6 +144,7 @@ utils/boardreader/runner.py
 Dockerfile
 requirements.txt
 my_runner.py
-files/input/*
-files/output/*
-workspace/*
+**/*details.csv
+**/*app.log
+**/*summary.csv
+**/*result.html

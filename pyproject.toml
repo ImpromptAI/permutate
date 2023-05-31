@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "permutate"
-version = "0.0.1"
+version = "0.0.3"
 description = "Testing framework for LLM Plugins"
 authors = ["shrikant <shrikant.pm14@gmail.com>"]
 readme = "README.md"
@@ -10,11 +10,14 @@ python = "^3.9"
 requests = "2.29.0"
 pydantic = "^1.10.8"
 pydantic-yaml = "^0.11.2"
-prettytable = "^3.7.0"
 tqdm = "^4.65.0"
 pyyaml = "^6.0"
-
+typer = { extras = ["all"], version = "^0.9.0" }
+jinja2 = "^3.1.2"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+permutate = "permutate.main:app"

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+    <style>
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+        }
+        td {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+          font-size: 13px;
+          width: 80px;
+          text-align: center;
+        }
+        th {
+          font-weight: normal;
+          font-size: 14px;
+          border: 1px solid #dddddd;
+          text-align: center;
+          padding: 8px;
+          background-color: #dddddd;
+          border: 1px solid #000000;
+        }
+        tr:nth-child(even) {
+
+        }
+        .details {
+          text-align: left;
+          width: 150px;
+        }
+        .pass {
+          background-color:#90EE90;
+           font-weight: bold;
+           opacity: 0.8;
+        }
+        .fail {
+          background-color: red;
+          font-weight: bold;
+          color: white;
+          opacity: 0.8;
+        }
+        .rheader {
+          color: black;
+          opacity: 0.8;
+          text-align: left;
+        }
+        .main {
+            margin: 40px;
+        }
+
+    </style>
+</head>
+<body>
+<div class="main">
+    <h3>Report</h3>
+    <p> Plugin: {{ plugin }}<br>
+        Started on:{{ started_on }}<br>
+        Ended on:{{ ended_on }}<br></p>
+    <h3>Summary</h3>
+    <table>
+        <tr>
+            {% for header in summary_headers %}
+            <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in summary_rows %}
+        <tr>
+            {% for cell in row %}
+            <td class="{{ cell.class_name }}">{{ cell.data }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    <h3>Details</h3>
+    <table>
+        <tr>
+            {% for header in headers %}
+            <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        {% set pass_icon = '<i class="fas fa-check-circle" style="color: green;"></i>' %}
+        {% set fail_icon = '<i class="fas fa-times-circle" style="color: red;"></i>' %}
+        {% for row in rows %}
+        {% if row.type == 'data' %}
+        <tr>
+            {% for cell in row.data %}
+            {% if cell.type == 'details' %}
+            <td class="{{ cell.class_name }}">
+                {% if cell.plugin_found %}
+                {{ pass_icon }} Plugin: {{ cell.plugin }}<br>
+                {% else %}
+                {{ fail_icon }} Plugin: {{ cell.plugin }}<br>
+                {% endif %}
+                {% if cell.operation_found %}
+                {{ pass_icon }} Operation: {{ cell.operation }}<br>
+                {% else %}
+                {{ fail_icon }} Operation: {{ cell.operation }}<br>
+                {% endif %}
+                {% if cell.params_found %}
+                {{ pass_icon }} Params: {{ cell.params }}<br>
+                {% else %}
+                {{ fail_icon }} Params: {{ cell.params }}<br>
+                {% endif %}
+            </td>
+            {% else %}
+            <td class="{{ cell.class_name }}">{{ cell.data }}</td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="10" class="rheader">{{ row.data }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>
+

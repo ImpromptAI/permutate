@@ -1,4 +1,4 @@
-version: 1.1.0
+version: 1.0.0
 name: klarna_plugin_test
 config:
   langchain_tool_selector: http://localhost:8006/api/langchain/run-plugin

@@ -1,4 +1,4 @@
-import logging
+import logging, os
 from .singleton import Singleton
 
 
@@ -11,7 +11,9 @@ class Logger(metaclass=Singleton):
         self.logger = logging.getLogger("LOGGER")
         self.logger.setLevel(logging.INFO)
         # File handler
-        file_handler = logging.FileHandler('workspace/app.log')
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        log_file_path = os.path.join(current_dir, 'workspace/app.log')
+        file_handler = logging.FileHandler(log_file_path)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
         # Add the file handler to the logger

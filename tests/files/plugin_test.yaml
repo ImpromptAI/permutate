@@ -1,6 +1,7 @@
 version: 1.1.0
 name: klarna_plugin_test
 config:
+  use_openplugin_library: true
   langchain_tool_selector: http://localhost:8006/api/langchain/run-plugin
   imprompt_tool_selector: http://localhost:8006/api/imprompt/run-plugin
   auto_translate_to_languages:

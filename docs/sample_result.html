@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+    <style>
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+        }
+        td {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+          font-size: 13px;
+          width: 80px;
+          text-align: center;
+        }
+        th {
+          font-weight: normal;
+          font-size: 14px;
+          border: 1px solid #dddddd;
+          text-align: center;
+          padding: 8px;
+          background-color: #dddddd;
+          border: 1px solid #000000;
+        }
+        tr:nth-child(even) {
+
+        }
+        .details {
+          text-align: left;
+          width: 150px;
+        }
+        .pass {
+          background-color:#90EE90;
+           font-weight: bold;
+           opacity: 0.8;
+        }
+        .fail {
+          background-color: red;
+          font-weight: bold;
+          color: white;
+          opacity: 0.8;
+        }
+        .rheader {
+          color: black;
+          opacity: 0.8;
+          text-align: left;
+        }
+        .main {
+            margin: 40px;
+        }
+
+    </style>
+</head>
+<body>
+<div class="main">
+    <h3>Report</h3>
+    <p> Plugin: Klarna Shopping<br>
+        Started on:2023-05-31 11:35:32<br>
+        Ended on:2023-05-31 11:35:58<br></p>
+    <h3>Summary</h3>
+    <table>
+        <tr>
+            
+            <th>Total Test Cases</th>
+            
+            <th>Failed Cases</th>
+            
+            <th>Total Run Time</th>
+            
+            <th>Average Response Time(in sec)</th>
+            
+            <th>Total Tokens Used</th>
+            
+            <th>Average Tokens Used</th>
+            
+            <th>Total API Cost</th>
+            
+        </tr>
+        
+        <tr>
+            
+            <td class="">4</td>
+            
+            <td class="">4</td>
+            
+            <td class="">21.79</td>
+            
+            <td class="">5.45</td>
+            
+            <td class="">4452</td>
+            
+            <td class="">1113</td>
+            
+            <td class="">0.0089</td>
+            
+        </tr>
+        
+    </table>
+    <h3>Details</h3>
+    <table>
+        <tr>
+            
+            <th>Tool Case Result</th>
+            
+            <th>Tool</th>
+            
+            <th>Pipeline</th>
+            
+            <th>LLM</th>
+            
+            <th>Model</th>
+            
+            <th>Language</th>
+            
+            <th>Response Time(in seconds)</th>
+            
+            <th>LLM Tokens Used</th>
+            
+            <th>LLM API Cost</th>
+            
+            <th>Tool Selected</th>
+            
+        </tr>
+        
+        
+        
+        
+        <tr>
+            <td colspan="10" class="rheader">Show me 5 T shirts from Klarna</td>
+        </tr>
+        
+        
+        
+        <tr>
+            
+            
+            <td class="fail">Failed</td>
+            
+            
+            
+            <td class="">Langchain</td>
+            
+            
+            
+            <td class="">zero-shot-react-description</td>
+            
+            
+            
+            <td class="">OpenAIChat</td>
+            
+            
+            
+            <td class="">gpt-3.5-turbo</td>
+            
+            
+            
+            <td class="">English</td>
+            
+            
+            
+            <td class="">12.8</td>
+            
+            
+            
+            <td class="">4452</td>
+            
+            
+            
+            <td class="">0.0089</td>
+            
+            
+            
+            <td class="details">
+                
+                <i class="fas fa-check-circle" style="color: green;"></i> Plugin: Klarna Shopping<br>
+                
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Operation: None<br>
+                
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Params: {'countryCode': 'US', 'q': 'T shirts', 'size': '5'}<br>
+                
+            </td>
+            
+            
+        </tr>
+        
+        
+        
+        <tr>
+            
+            
+            <td class="fail">Failed</td>
+            
+            
+            
+            <td class="">Imprompt</td>
+            
+            
+            
+            <td class="">default</td>
+            
+            
+            
+            <td class="">OpenAIChat</td>
+            
+            
+            
+            <td class="">gpt-3.5-turbo</td>
+            
+            
+            
+            <td class="">English</td>
+            
+            
+            
+            <td class="">4.14</td>
+            
+            
+            
+            <td class="">0</td>
+            
+            
+            
+            <td class="">0.0</td>
+            
+            
+            
+            <td class="details">
+                
+                <i class="fas fa-check-circle" style="color: green;"></i> Plugin: Klarna Shopping<br>
+                
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Operation: None<br>
+                
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Params: {'countryCode': 'US', 'q': 'T shirts', 'size': '5'}<br>
+                
+            </td>
+            
+            
+        </tr>
+        
+        
+        
+        <tr>
+            <td colspan="10" class="rheader">Get me 5 oranges</td>
+        </tr>
+        
+        
+        
+        <tr>
+            
+            
+            <td class="fail">Failed</td>
+            
+            
+            
+            <td class="">Langchain</td>
+            
+            
+            
+            <td class="">zero-shot-react-description</td>
+            
+            
+            
+            <td class="">OpenAIChat</td>
+            
+            
+            
+            <td class="">gpt-3.5-turbo</td>
+            
+            
+            
+            <td class="">English</td>
+            
+            
+            
+            <td class="">0.0</td>
+            
+            
+            
+            <td class="">0</td>
+            
+            
+            
+            <td class="">0.0</td>
+            
+            
+            
+            <td class="details">
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Plugin: None<br>
+                
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Operation: None<br>
+                
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Params: None<br>
+                
+            </td>
+            
+            
+        </tr>
+        
+        
+        
+        <tr>
+            
+            
+            <td class="fail">Failed</td>
+            
+            
+            
+            <td class="">Imprompt</td>
+            
+            
+            
+            <td class="">default</td>
+            
+            
+            
+            <td class="">OpenAIChat</td>
+            
+            
+            
+            <td class="">gpt-3.5-turbo</td>
+            
+            
+            
+            <td class="">English</td>
+            
+            
+            
+            <td class="">4.85</td>
+            
+            
+            
+            <td class="">0</td>
+            
+            
+            
+            <td class="">0.0</td>
+            
+            
+            
+            <td class="details">
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Plugin: None<br>
+                
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Operation: None<br>
+                
+                
+                <i class="fas fa-times-circle" style="color: red;"></i> Params: None<br>
+                
+            </td>
+            
+            
+        </tr>
+        
+        
+    </table>
+</div>
+</body>
+</html>

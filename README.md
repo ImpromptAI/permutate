@@ -63,5 +63,79 @@ Until OpenAI makes their Tool Selector service available to the public, you have
 </ol>
 
 ### Getting started
+
+#### Installation
+To install using pip, run:
+```sh
+pip install permutate
+```
+You can verify you have permutate installed by running:
+```sh
+permutate --help
+```
+
+#### Credentials
+Before you can deploy an application, be sure you have credentials configured.
+```sh
+
+```
+
+#### Create your test file
+TODO
+
+
+
+#### Run your test file
+
+
+    Usage: permutation run [TEST_FILE_PATH] [OPTIONS]
+    
+    Run a permutation batch
+
+    Arguments:
+      test_file_path        Plugin test setup file.
+                            default: /permutate/workspace/plugin_test.yaml
+
+    Options:
+      --help                                   show this help message and exit
+      --save-to-html  --no-save-to-html        Save the results of the permutation run to an html file.
+                                               default: save-to-html
+      --save-to-csv   --no-save-to-csv         Save the results of the permutation run to a csv file.
+                                               default: no-save-to-csv
+      --output-directory                       Path to the directory where the output files will be saved.
+                                               default: /permutate/workspace/output/
+
+***Examples:***
+
+This command will run the tests defined in the plugin_test.yaml file and save the results to a csv file and an html file in the directory pointed by the flag --output-directory.
+```sh
+permutate run tests/files/plugin_test.yaml --output-directory tests/files/output/ --save-to-csv --save-to-html 
+```
+
+This command will run the tests on a sample test file provided in the package and save the results to an html file. This command can be used to see the sample output.
+
+```sh
+permutate run
+```
+
+##### Output
+You can save your permutate run output to: 
+1. HTML Report:
+
+    You can save your permutation run output to an HTML Report that presents the results of the permutation run in a structured and visually appealing format.
+
+    Report sample: https://legendaryai.github.io/permutate/
+
+![Alt text](docs/sample_result_screenshot.png?raw=75x75 "Logo")
+
+
+2. CSV Report.
+
+    You can save your permutation run output to two csv files: one for the permutation run summary and one for the permutation run details.
+    
+    Summary sample: https://legendaryai.github.io/permutate/
+
+    Details sample: https://legendaryai.github.io/permutate/
+
 (THIS PROJECT IS NOT RELEASED YET).
 More docs coming soon!

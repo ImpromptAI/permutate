@@ -75,15 +75,93 @@ permutate --help
 ```
 
 #### Credentials
-Before you can deploy an application, be sure you have credentials configured.
+Before you run the application, be sure you have credentials configured.
 ```sh
-
+export OPENAI_API_KEY=<your key> // if you want to use OpenAI LLM
+export COHERE_API_KEY=<your key> // if you wan to use Cohere LLM
+export GOOGLE_APPLICATION_CREDENTIALS=<credential_file_path: /usr/app/application_default_credentials.json> // if you want to use Google LLM
 ```
 
 #### Create your test file
-TODO
+Sample test file: https://raw.githubusercontent.com/LegendaryAI/permutate/main/tests/files/plugin_test.yaml
 
-
+```commandline
+version: 1.0.0
+name: klarna_plugin_test
+config:
+  use_openplugin_library: true
+  langchain_tool_selector: http://localhost:8006/api/langchain/run-plugin
+  imprompt_tool_selector: http://localhost:8006/api/imprompt/run-plugin
+  auto_translate_to_languages:
+    - English
+    - Spanish
+test_plugin:
+    manifest_url: https://www.klarna.com/.well-known/ai-plugin.json
+plugin_groups:
+  - plugin_group:
+    name: my_group1
+    plugins:
+      - plugin:
+        manifest_url: https://www.klarna.com/.well-known/ai-plugin.json
+  - plugin_group:
+    name: my_group2
+    plugins:
+      - plugin:
+        manifest_url: https://www.klarna.com/.well-known/ai-plugin.json
+      - plugin:
+        manifest_url: https://api.imprompt.ai/plugin/users/2/blogwriter/.well-known/ai-plugin.json
+permutations:
+  - permutation:
+    name: permutation1
+    llm:
+      provider: OpenAIChat
+      model_name: gpt-3.5-turbo
+      temperature: 0
+      max_tokens: 1024
+      top_p: 1
+      frequency_penalty: 0
+      presence_penalty: 0
+      n: 1
+      best_of: 1
+    tool_selector:
+      provider: Langchain
+      pipeline_name: zero-shot-react-description
+      plugin_group_name: my_group1
+  - permutation:
+    name: permutation2
+    llm:
+      provider: OpenAIChat
+      model_name: gpt-3.5-turbo
+      temperature: 0
+      max_tokens: 1024
+      top_p: 1
+      frequency_penalty: 0
+      presence_penalty: 0
+      n: 1
+      best_of: 1
+    tool_selector:
+      provider: Imprompt
+      pipeline_name: default
+      plugin_group_name: my_group1
+test_cases:
+  - test_case:
+    name: test1
+    prompt: Show me 5 T shirts from Klarna
+    expected_plugin_used: KlarnaProducts
+    expected_api_used: https://www.klarna.com/us/shopping/public/openai/v0/products
+    expected_parameters:
+      q: t shirt
+      size: 5
+    expected_response: List of 5 T shirts with URL
+  - test_case:
+    name: test2
+    prompt: Get me 5 oranges
+    expected_plugin_used: None
+    expected_api_used: None
+    expected_parameters:
+      num_shirts: None
+    expected_response: None
+```
 
 #### Run your test file
 
@@ -124,18 +202,19 @@ You can save your permutate run output to:
 
     You can save your permutation run output to an HTML Report that presents the results of the permutation run in a structured and visually appealing format.
 
-    Report sample: https://legendaryai.github.io/permutate/
+   Sample report: https://raw.githubusercontent.com/LegendaryAI/permutate/main/docs/sample_result.html
 
-![Alt text](docs/sample_result_screenshot.png?raw=75x75 "Logo")
+   https://raw.githubusercontent.com/LegendaryAI/permutate/main/docs/sample_result_screenshot.png
+   ![Alt text](docs/sample_result_screenshot.png?raw=75x75 "Logo")
 
 
 2. CSV Report.
 
     You can save your permutation run output to two csv files: one for the permutation run summary and one for the permutation run details.
     
-    Summary sample: https://legendaryai.github.io/permutate/
+    Sample summary: https://raw.githubusercontent.com/LegendaryAI/permutate/main/docs/sample_result_summary.csv
 
-    Details sample: https://legendaryai.github.io/permutate/
+    Sample details: https://raw.githubusercontent.com/LegendaryAI/permutate/main/docs/sample_result_details.csv
 
 (THIS PROJECT IS NOT RELEASED YET).
 More docs coming soon!

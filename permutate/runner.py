@@ -78,8 +78,12 @@ class Runner:
         })
         passed = True
         if config.use_openplugin_library:
-            response_json = run_plugin_selector(payload)
-            if response_json is None:
+            try:
+                response_json = run_plugin_selector(payload)
+                if response_json is None:
+                    passed = False
+            except Exception as e:
+                print(e)
                 passed = False
         else:
             if permutation.tool_selector.get("provider") == "Imprompt":

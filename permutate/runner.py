@@ -84,6 +84,7 @@ class Runner:
                     passed = False
             except Exception as e:
                 print(e)
+                response_json=None
                 passed = False
         else:
             if permutation.tool_selector.get("provider") == "Imprompt":

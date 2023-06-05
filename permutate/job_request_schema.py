@@ -49,6 +49,7 @@ class TestCase(BaseModel):
 
 
 class Config(BaseModel):
+    openplugin_api_key: Optional[str]
     use_openplugin_library: Optional[bool]
     openai_api_key: Optional[str]
     langchain_tool_selector: Optional[str]

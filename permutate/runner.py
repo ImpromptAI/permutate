@@ -84,7 +84,7 @@ class Runner:
                     passed = False
             except Exception as e:
                 print(e)
-                response_json=None
+                response_json = None
                 passed = False
         else:
             if permutation.tool_selector.get("provider") == "Imprompt":
@@ -93,8 +93,10 @@ class Runner:
                 url = config.langchain_tool_selector
             else:
                 raise Exception("Tool selector provider not supported")
-            headers = {'Content-Type': 'application/json'}
+            headers = {'x-api-key': config.openplugin_api_key, 'Content-Type': 'application/json'}
             response = requests.request("POST", url, headers=headers, data=payload)
+            if response.status_code == 401 or response.status_code == 403:
+                raise Exception("Invalid Openplugin API key")
             if response.status_code != 200:
                 passed = False
             response_json = response.json()
@@ -130,14 +132,15 @@ class Runner:
                     detected_plugin_operation.get("plugin").get("name_for_human") == test_case.expected_plugin_used:
                 is_plugin_detected = True
                 plugin_name = detected_plugin_operation.get("plugin").get("name_for_human")
-                if detected_plugin_operation.get("plugin").get("api_called") == test_case.expected_api_used:
+                if detected_plugin_operation.get("api_called") == test_case.expected_api_used:
                     is_plugin_operation_found = True
-                plugin_operation = detected_plugin_operation.get("plugin").get("api_called")
+                plugin_operation = detected_plugin_operation.get("api_called")
                 plugin_parameters_mapped = detected_plugin_operation.get("mapped_operation_parameters")
                 if plugin_parameters_mapped:
                     expected_params = test_case.expected_parameters
                     common_pairs = {k: plugin_parameters_mapped[k] for k in plugin_parameters_mapped if
-                                    k in expected_params and plugin_parameters_mapped[k] == expected_params[k]}
+                                    k in expected_params and str(plugin_parameters_mapped[k]) == str(
+                                        expected_params[k])}
                     if len(common_pairs) == len(expected_params):
                         parameter_mapped_percentage = 100
                         is_plugin_parameter_mapped = True

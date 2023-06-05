@@ -977,13 +977,13 @@ pydantic = ">=1.8.2"
 
 [[package]]
 name = "openplugin"
-version = "0.0.9"
+version = "0.0.14"
 description = ""
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "openplugin-0.0.9-py3-none-any.whl", hash = "sha256:a8d66c26851e7d4d768d22a9bfa84265ad58bc2d85289820df15fad2f030b6c1"},
-    {file = "openplugin-0.0.9.tar.gz", hash = "sha256:f464106efdc4f4671b75767bdd768da4a122fe772d4f22b7bacb1bed25118abd"},
+    {file = "openplugin-0.0.14-py3-none-any.whl", hash = "sha256:d1f17f74f79517c5c5b3a3f7066b0601f1b4fb403a88106fb92a6893a53b577e"},
+    {file = "openplugin-0.0.14.tar.gz", hash = "sha256:38c0a143ec42f7178acd00d7529ef8b06b4d74c13932956ee75115db131b9407"},
 ]
 
 [package.dependencies]
@@ -1682,4 +1682,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f3cb69ebef3d3527998c84fcc7db41d7be29590b2f025caa78e0d2238e4dd249"
+content-hash = "ca99c765afefc5a98ace3a7f5342d99b3483f0d0d29731220b68805ee98fa6b3"

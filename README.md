@@ -196,6 +196,11 @@ This command will run the tests on a sample test file provided in the package an
 permutate run
 ```
 
+#### Docker
+```shell
+docker run -v /LOCALPATH/plugin_test.yaml:/usr/app/plugin_test.yaml -e "OPENAI_KEY=your-key" -e "COHERE_API_KEY=your-key" -e "GOOGLE_APPLICATION_CREDENTIALS=your-file-path" shrikant14/permutate:latest
+```
+
 ##### Output
 You can save your permutate run output to: 
 1. HTML Report:

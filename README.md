@@ -53,14 +53,10 @@ To satisfy these concerns, developers will use a Tool Selector service. Here, th
 
 To make life simple, we created OpenPlugin. This is optional. This allows plugin service providers to offer their best implementation possible. If an implementation isn’t giving you the accuracy or performance you need, try another. But more importantly, it allows you to test plugins using basic CI/CD principles.  
 
-#### Is this just for OpenAI?
-No. OpenAI hasn’t (yet) made their tool selector service available to the public. We encourage all vendors to make their tool selector service available. This allows for headless automation testing, and without it, we can anticipate poor plugin quality. 
+#### Does this work with OpenAI Plugins and/or Functions?
+Yes - for OpenAI Functions. 
+For OpenAI Plugins, the answer is "mostly" both Imprompt and LangChain have emulated their approach and via those bindings, you can test the Manifest file approach. 
 
-Until OpenAI makes their Tool Selector service available to the public, you have two options:
-<ol>
-<li>Manual Testing</li>
-<li>UI Testing (e.g., Selenium Hell).</li>
-</ol>
 
 ### Getting started
 

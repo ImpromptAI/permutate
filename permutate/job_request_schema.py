@@ -1,4 +1,5 @@
 import requests
+from enum import Enum
 from datetime import datetime
 from pydantic_yaml import YamlModel
 from typing import List, Optional, Dict
@@ -12,25 +13,7 @@ class Permutation(BaseModel):
 
 
 class Plugin(BaseModel):
-    schema_version: Optional[str]
-    name_for_model: Optional[str]
-    name_for_human: Optional[str]
-    description_for_model: Optional[str]
-    description_for_human: Optional[str]
-    logo_url: Optional[str]
-    contact_email: Optional[str]
-    legal_info_url: Optional[str]
     manifest_url: str
-
-    @root_validator(pre=True)
-    def _set_fields(cls, values: dict) -> dict:
-        """This is a validator that sets the field values based on the manifest_url"""
-        if values.get("manifest_url"):
-            manifest_obj = requests.get(values.get("manifest_url")).json()
-            for key in manifest_obj.keys():
-                if key not in values.keys():
-                    values[key] = manifest_obj[key]
-        return values
 
 
 class PluginGroup(BaseModel):
@@ -39,22 +22,27 @@ class PluginGroup(BaseModel):
     plugins: List[Plugin]
 
 
+class TestCaseType(Enum):
+    PLUGIN_SELECTOR = "plugin_selector"
+    API_SIGNATURE_SELECTOR = "api_signature_selector"
+
+
 class TestCase(BaseModel):
     name: str
     prompt: str
-    expected_plugin_used: str
-    expected_api_used: str
-    expected_parameters: Dict[str, str]
-    expected_response: str
+    type: TestCaseType
+    expected_response: Optional[str]
+    expected_plugin_used: Optional[str]
+    expected_api_used: Optional[str]
+    expected_method: Optional[str]
+    expected_parameters: Optional[Dict[str, str]]
 
 
 class Config(BaseModel):
     openplugin_api_key: Optional[str]
     use_openplugin_library: Optional[bool]
     openai_api_key: Optional[str]
-    langchain_tool_selector: Optional[str]
-    imprompt_tool_selector: Optional[str]
-    auto_translate_to_languages: List[str]
+    tool_selector_endpoint: Optional[str]
 
 
 class JobRequest(YamlModel):
@@ -71,10 +59,12 @@ class JobRequest(YamlModel):
             if plugin_group.name == plugin_group_name:
                 return plugin_group
 
-    def get_plugin_group_from_permutation(self, permutation: Permutation) -> PluginGroup:
+    def get_plugin_group_from_permutation(self,
+                                          permutation: Permutation) -> PluginGroup:
         for plugin_group in self.plugin_groups:
             if plugin_group.name == permutation.tool_selector.get("plugin_group_name"):
                 return plugin_group
 
     def get_job_request_name(self):
-        return "{}-{}-{}".format(self.name, self.version, datetime.now().strftime("%Y-%m-%d"))
+        return "{}-{}-{}".format(self.name, self.version,
+                                 datetime.now().strftime("%Y-%m-%d"))

@@ -101,10 +101,12 @@
                 {% else %}
                 {{ fail_icon }} Operation: {{ cell.operation }}<br>
                 {% endif %}
+                {% if cell.test_type == 'api_signature_selector' %}
                 {% if cell.params_found %}
                 {{ pass_icon }} Params: {{ cell.params }}<br>
                 {% else %}
                 {{ fail_icon }} Params: {{ cell.params }}<br>
+                {% endif %}
                 {% endif %}
             </td>
             {% else %}

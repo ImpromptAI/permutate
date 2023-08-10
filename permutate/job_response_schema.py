@@ -10,6 +10,7 @@ from .job_request_schema import Permutation, Plugin
 class JobDetail(BaseModel):
     permutation_name: str
     permutation_summary: str
+    test_type: str
     test_case_name: str
     is_run_completed: bool
     language: str
@@ -28,6 +29,8 @@ class JobDetail(BaseModel):
     llm_api_cost: Optional[float]
 
     def get_tool_case_result(self):
+        if self.test_type == "plugin_selector":
+            return "Passed" if self.is_plugin_detected and self.is_plugin_operation_found else "Failed"
         return "Passed" if self.is_plugin_detected and self.is_plugin_operation_found and self.is_plugin_parameter_mapped else "Failed"
 
 
@@ -119,6 +122,12 @@ class JobResponse(BaseModel):
             test_cases[detail.test_case_name] = detail.prompt
         return test_cases
 
+    def get_test_types(self):
+        test_cases = {}
+        for detail in self.details:
+            test_cases[detail.test_case_name] = detail.test_type
+        return test_cases
+
     def save_to_csv(self, break_down_by_environment: bool = False):
         if not break_down_by_environment:
             fieldnames = list(JobSummary.schema()["properties"].keys())
@@ -146,7 +155,8 @@ class JobResponse(BaseModel):
                 with open(summary_filename, "w") as fp:
                     writer = csv.DictWriter(fp, fieldnames=fieldnames)
                     writer.writeheader()
-                    writer.writerow(json.loads(JobSummaryOut(**self.summary.dict()).json()))
+                    writer.writerow(
+                        json.loads(JobSummaryOut(**self.summary.dict()).json()))
 
                 fieldnames = list(JobDetail.schema()["properties"].keys())
                 detail_filename = f"{self.output_directory}{self.job_name}{environment_name}_details.csv"
@@ -155,13 +165,15 @@ class JobResponse(BaseModel):
                     writer.writeheader()
                     for detail in self.details:
                         if detail.permutation_name == permutation.name:
-                            writer.writerow(json.loads(JobDetail(**detail.dict()).json()))
+                            writer.writerow(
+                                json.loads(JobDetail(**detail.dict()).json()))
                 print(f"Summary csv result\n\t{summary_filename}")
                 print(f"Details csv result\n\t{detail_filename}")
 
     def build_html_table(self) -> str:
         header = [
             "Tool Case Result",
+            "Type",
             "Tool",
             "Pipeline",
             "LLM",
@@ -175,6 +187,7 @@ class JobResponse(BaseModel):
         rows = []
         group_details = self.group_details()
         test_cases = self.get_test_cases()
+        test_types = self.get_test_types()
         for test_case_name in group_details:
             r_header = {"data": test_cases.get(test_case_name), "type": "header"}
             rows.append(r_header)
@@ -182,7 +195,9 @@ class JobResponse(BaseModel):
                 tool_case_result = detail.get_tool_case_result()
                 permutation = self.get_permutation_by_name(detail.permutation_name)
                 row = [
-                    {"data": tool_case_result, "class_name": "fail" if tool_case_result == "Failed" else "pass"},
+                    {"data": tool_case_result,
+                     "class_name": "fail" if tool_case_result == "Failed" else "pass"},
+                    {"data": test_types.get(test_case_name)},
                     {"data": permutation.tool_selector.get("provider")},
                     {"data": permutation.tool_selector.get("pipeline_name")},
                     {"data": permutation.llm.get("provider")},
@@ -193,6 +208,7 @@ class JobResponse(BaseModel):
                     {"data": detail.llm_api_cost},
                     {
                         "type": "details",
+                        "test_type": test_types.get(test_case_name),
                         "class_name": "details",
                         "plugin": detail.plugin_name,
                         "plugin_found": detail.is_plugin_detected,
@@ -204,12 +220,13 @@ class JobResponse(BaseModel):
                 ]
                 rows.append({"data": row, "type": "data"})
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        template_env = Environment(loader=FileSystemLoader(searchpath=f"{current_dir}/templates"))
+        template_env = Environment(
+            loader=FileSystemLoader(searchpath=f"{current_dir}/templates"))
         template = template_env.get_template("job_result_template.html")
         summary_headers = [
             "Total Test Cases",
             "Failed Cases",
-            "Total Run Time",
+            "Total Run Time(in sec)",
             "Average Response Time(in sec)",
             "Total Tokens Used",
             "Average Tokens Used",
@@ -225,10 +242,11 @@ class JobResponse(BaseModel):
             {"data": self.summary.average_llm_tokens_used},
             {"data": self.summary.total_llm_api_cost},
         ])
-        plugin = self.test_plugin.name_for_human
+        plugin = self.test_plugin.manifest_url
         started_on = self.started_on.strftime("%Y-%m-%d %H:%M:%S")
         ended_on = self.completed_on.strftime("%Y-%m-%d %H:%M:%S")
-        html = template.render(plugin=plugin, started_on=started_on, ended_on=ended_on, summary_headers=summary_headers,
+        html = template.render(plugin=plugin, started_on=started_on, ended_on=ended_on,
+                               summary_headers=summary_headers,
                                summary_rows=summary_rows, headers=header, rows=rows)
         filename = f"{self.job_name}-result.html"
 

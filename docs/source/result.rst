@@ -9,8 +9,9 @@ You can save your permutate run output to:
 
    Sample report: https://raw.githubusercontent.com/LegendaryAI/permutate/main/docs/sample_result.html
 
-   https://raw.githubusercontent.com/LegendaryAI/permutate/main/docs/sample_result_screenshot.png
-   ![Alt text](docs/source/_samples/sample_result_screenshot.png?raw=75x75 "Logo")
+.. image:: /_samples/sample_result_screenshot.png
+   :alt: Permutate Suite
+   :align: center
 
 
 2. CSV Report.

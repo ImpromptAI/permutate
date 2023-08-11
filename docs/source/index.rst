@@ -1,6 +1,7 @@
-=====================================
-Documentation!
-=====================================
+======================
+Documentation
+======================
+
 
 **Permutate is an automated testing framework for LLM Plugins.**
 
@@ -13,7 +14,6 @@ From a software quality perspective, several common problems surfaced:
 Despite the plugin being “installed” in a user’s environment, the plugin wasn’t consistently activated by the user’s text.
 When it was activated, the plugin wasn’t called correctly, leading to undesirable results.
 Ultimately, plugin developers chose to remove the bulk of their features just to get basic functions to run correctly. 🙁
-
 
 
 .. toctree::

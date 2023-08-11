@@ -20,9 +20,24 @@ openplugin = "^0.0.14"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
 
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "6.2.1"
+toml = "^0.10.2"
+sphinx-tabs = "^3.4.1"
+sphinx-copybutton = "^0.5.2"
+sphinx-book-theme = "^1.0.1"
+
+
+[tool.poetry.group.test.dependencies]
+poethepoet = "^0.21.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 permutate = "permutate.main:app"
+
+[tool.poe.tasks]
+build_docs = "sphinx-build docs/source docs/build"

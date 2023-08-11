@@ -2,7 +2,7 @@ version: 1.1.0
 name: klarna_plugin_test
 config:
   tool_selector_endpoint: http://localhost:8006
-  openplugin_api_key: IJfTPpOLAbx83MZIbdggHcGCNIgzZE3e8gNstxSfVuNco3btsNzdKfOr6vRNxi7Y
+  openplugin_api_key:
   auto_translate_to_languages:
     - English
     - Spanish

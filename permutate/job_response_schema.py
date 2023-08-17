@@ -101,7 +101,7 @@ class JobResponse(BaseModel):
     permutations: List[Permutation]
     summary: JobSummary
     details: List[JobDetail]
-    output_directory: str
+    output_directory: Optional[str]
 
     def get_permutation_by_name(self, name: str):
         for permutation in self.permutations:

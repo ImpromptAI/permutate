@@ -1,0 +1,14 @@
+[
+  {
+    "provider": "OpenAI",
+    "pipeline_name": "default"
+  },
+  {
+    "provider": "Langchain",
+    "pipeline_name": "zero-shot-react-description"
+  },
+  {
+    "provider": "Imprompt",
+    "pipeline_name": "default"
+  }
+]

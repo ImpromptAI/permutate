@@ -23,6 +23,10 @@ class Runner:
         with open(file_path) as f:
             yaml_file = f.read()
         request = JobRequest.parse_raw(yaml_file)
+        self.start_request(request, output_directory, save_to_html, save_to_csv)
+
+    def start_request(self, request: JobRequest, output_directory: str = None,
+                      save_to_html=True, save_to_csv=True) -> JobResponse:
         self.progress_counter = int(100 / (
                 len(request.permutations) * len(request.test_cases)))
         batch_job_started_on = datetime.now()
@@ -48,6 +52,7 @@ class Runner:
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
+        return response
 
     def single_permutation(self, request, permutation):
         permutation_details = []

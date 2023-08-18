@@ -16,8 +16,8 @@ You can verify you have permutate installed by running:
     permutate --help
 
 
-Credentials
-==============
+Setup environment variables
+=============================
 
 Before you run the application, be sure you have credentials configured.
 
@@ -28,8 +28,22 @@ Before you run the application, be sure you have credentials configured.
     export GOOGLE_APPLICATION_CREDENTIALS=<credential_file_path: /usr/app/application_default_credentials.json> // if you want to use Google LLM
 
 
-Run your test file
-======================
+Start permutate http server
+==============================
+
+.. code-block:: sh
+
+    python start_api_server.py
+
+or with poetry
+
+
+.. code-block:: sh
+
+    poetry run python start_api_server.py
+
+Using permutate as a library to run tests
+============================================
 
 .. code-block:: sh
 
@@ -73,3 +87,23 @@ Docker
 
     docker run -v /LOCALPATH/plugin_test.yaml:/usr/app/plugin_test.yaml -e "OPENAI_KEY=your-key" -e "COHERE_API_KEY=your-key" -e "GOOGLE_APPLICATION_CREDENTIALS=your-file-path" shrikant14/permutate:latest
 
+
+Result from permutate run command
+======================================
+
+You can save your permutate run output to:
+
+1. HTML Report:
+=================
+
+You can save your permutation run output to an HTML Report that presents the results of the permutation run in a structured and visually appealing format.
+
+.. image:: /_samples/sample_result_screenshot.png
+   :alt: Permutate Suite
+   :align: center
+
+
+2. CSV Report.
+=================
+
+You can save your permutation run output to two csv files: one for the permutation run summary and one for the permutation run details.

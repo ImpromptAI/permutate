@@ -1,12 +1,15 @@
+import os
 import json
 import requests
 import webbrowser
 from tqdm import tqdm
 from .logger import logger
 from datetime import datetime
-from openplugin import run_plugin_selector
 from .job_request_schema import JobRequest, TestCaseType
 from .job_response_schema import JobResponse, JobSummary, JobDetail
+from openplugin import run_plugin_selector, run_api_signature_selector
+
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 
 class Runner:
@@ -90,42 +93,79 @@ class Runner:
                 passed = False
         '''
         passed = True
-        if test_case.type == TestCaseType.PLUGIN_SELECTOR:
-            url = f"{config.tool_selector_endpoint}/api/plugin-selector"
-            payload = json.dumps({
-                "messages": [{
-                    "content": test_case.prompt,
-                    "message_type": "HumanMessage"
-                }],
-                "plugins": plugin_group.dict().get("plugins"),
-                "config": config.dict(),
-                "tool_selector_config": permutation.tool_selector,
-                "llm": permutation.llm
-            })
-        elif test_case.type == TestCaseType.API_SIGNATURE_SELECTOR:
-            url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
-            payload = json.dumps({
-                "messages": [{
-                    "content": test_case.prompt,
-                    "message_type": "HumanMessage"
-                }],
-                "plugin": {"manifest_url": test_plugin.manifest_url},
-                "config": config.dict(),
-                "tool_selector_config": permutation.tool_selector,
-                "llm": permutation.llm
-            })
+        if config.tool_selector_endpoint is None:
+            if test_case.type == TestCaseType.PLUGIN_SELECTOR:
+                payload = {
+                    "messages": [{
+                        "content": test_case.prompt,
+                        "message_type": "HumanMessage"
+                    }],
+                    "plugins": plugin_group.dict().get("plugins"),
+                    "config": config.dict(),
+                    "tool_selector_config": permutation.tool_selector,
+                    "llm": permutation.llm
+                }
+                if config.openai_api_key is None:
+                    if OPENAI_API_KEY is None:
+                        raise Exception("OpenAI API key is not set")
+                    payload["config"]["openai_api_key"] = OPENAI_API_KEY
+
+                response_json = run_plugin_selector(payload)
+            elif test_case.type == TestCaseType.API_SIGNATURE_SELECTOR:
+                payload = {
+                    "messages": [{
+                        "content": test_case.prompt,
+                        "message_type": "HumanMessage"
+                    }],
+                    "plugin": {"manifest_url": test_plugin.manifest_url},
+                    "config": config.dict(),
+                    "tool_selector_config": permutation.tool_selector,
+                    "llm": permutation.llm
+                }
+                if config.openai_api_key is None:
+                    if OPENAI_API_KEY is None:
+                        raise Exception("OpenAI API key is not set")
+                    payload["config"]["openai_api_key"] = OPENAI_API_KEY
+                response_json = run_api_signature_selector(payload)
+            else:
+                raise Exception("Incorrect test case type")
         else:
-            raise Exception("Incorrect test case type")
-        headers = {
-            'x-api-key': config.openplugin_api_key,
-            'Content-Type': 'application/json'
-        }
-        response = requests.request("POST", url, headers=headers, data=payload)
-        if response.status_code == 401 or response.status_code == 403:
-            raise Exception("Invalid Openplugin API key")
-        if response.status_code != 200:
-            passed = False
-        response_json = response.json()
+            if test_case.type == TestCaseType.PLUGIN_SELECTOR:
+                url = f"{config.tool_selector_endpoint}/api/plugin-selector"
+                payload = json.dumps({
+                    "messages": [{
+                        "content": test_case.prompt,
+                        "message_type": "HumanMessage"
+                    }],
+                    "plugins": plugin_group.dict().get("plugins"),
+                    "config": config.dict(),
+                    "tool_selector_config": permutation.tool_selector,
+                    "llm": permutation.llm
+                })
+            elif test_case.type == TestCaseType.API_SIGNATURE_SELECTOR:
+                url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                payload = json.dumps({
+                    "messages": [{
+                        "content": test_case.prompt,
+                        "message_type": "HumanMessage"
+                    }],
+                    "plugin": {"manifest_url": test_plugin.manifest_url},
+                    "config": config.dict(),
+                    "tool_selector_config": permutation.tool_selector,
+                    "llm": permutation.llm
+                })
+            else:
+                raise Exception("Incorrect test case type")
+            headers = {
+                'x-api-key': config.openplugin_api_key,
+                'Content-Type': 'application/json'
+            }
+            response = requests.request("POST", url, headers=headers, data=payload)
+            if response.status_code == 401 or response.status_code == 403:
+                raise Exception("Invalid Openplugin API key")
+            if response.status_code != 200:
+                passed = False
+            response_json = response.json()
         if not passed or response_json is None:
             return JobDetail(
                 permutation_name=permutation.name,

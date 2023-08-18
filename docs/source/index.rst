@@ -22,7 +22,7 @@ Ultimately, plugin developers chose to remove the bulk of their features just to
     introduction
     quickstart
     request
-    result
+    apis/index
     Github Repo <https://github.com/ImpromptAI/permutate>
 
 

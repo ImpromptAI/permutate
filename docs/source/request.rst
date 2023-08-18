@@ -1,5 +1,7 @@
-Request
-============
+.. _request-label:
+===========================
+Build a permutate request
+===========================
 
 Permutate takes a request in the form of a YAML or JSON file. The request contains the following fields:
 
@@ -122,9 +124,11 @@ The config contains the configuration for the test suite.
           }
         }
 
-**4. Plugin Groups**
+**4. Plugin Group**
 
-The plugin groups are the groups of plugins that will be used to test the permutations. The plugin groups are used to test the tool selector.
+Plugin groups is a groups of plugins that will be used to test the permutations.
+
+The permutation job accepts an array of plugin groups.
 
 .. tabs::
 
@@ -137,9 +141,6 @@ The plugin groups are the groups of plugins that will be used to test the permut
        * - Field
          - Type
          - Description
-       * - plugin_group
-         - list of plugin groups
-         - The plugin groups that will be used to test the permutations
        * - name
          - string
          - The name of the plugin group
@@ -207,6 +208,215 @@ The plugin groups are the groups of plugins that will be used to test the permut
               }
             }
           ]
+        }
+
+**4. Test Case**
+
+The test case consist of a sample prompt with expected output values that will be used to test the permutations.
+
+The permutation job accepts an array of test cases.
+
+Test cases are of two types: Plugin Selector and API Signature Selector
+
+The only difference between the two is that the API Signature Selector test case has an additional field called expected_parameters.
+
+.. tabs::
+
+  .. tab:: Fields
+
+    .. list-table::
+       :widths: 20 20 60
+       :header-rows: 1
+
+       * - Field
+         - Type
+         - Description
+       * - name
+         - string
+         - The name of the test case
+       * - type
+         - string
+         - The type of the test case. The type can be either plugin_selector or api_signature_selector
+       * - prompt
+         - string
+         - The prompt that will be used to test the permutations
+       * - expected_plugin_used
+         - string
+         - The manifest url of the expected plugin
+       * - expected_api_used
+         - string
+         - The expected api url of the plugin
+       * - expected_method
+         - string
+         - The expected method of the api
+       * - expected_parameters
+         - string
+         - The expected parameters of the api
+
+
+  .. tab:: YAML
+
+    .. code-block:: yaml
+
+        test_cases:
+          - test_case:
+            name: test1
+            type: plugin_selector
+            prompt: Show me 5 T shirts from Klarna
+            expected_plugin_used: https://assistant-management-data.s3.amazonaws.com/Klarna_Shopping.json
+            expected_api_used: https://www.klarna.com/us/shopping/public/openai/v0/products
+            expected_method: get
+          - test_case:
+            name: test2
+            type: api_signature_selector
+            prompt: Show me 5 T shirts from Klarna
+            expected_plugin_used: https://assistant-management-data.s3.amazonaws.com/Klarna_Shopping.json
+            expected_api_used: https://www.klarna.com/us/shopping/public/openai/v0/products
+            expected_method: get
+            expected_parameters:
+              q: T shirt
+              size: 5
+
+  .. tab:: JSON
+
+    .. code-block:: json
+
+         "test_cases": [
+            {
+              "test_case": null,
+              "name": "test1",
+              "type": "plugin_selector",
+              "prompt": "Show me 5 T shirts from Klarna",
+              "expected_plugin_used": "https://assistant-management-data.s3.amazonaws.com/Klarna_Shopping.json",
+              "expected_api_used": "https://www.klarna.com/us/shopping/public/openai/v0/products",
+              "expected_method": "get"
+            }
+          ]
+
+**4. Permutation**
+
+The permutation is the combination of the llm and tool selector that will be used to test the test cases.
+
+The permutation job accepts an array of permutations.
+
+A permutation object is made up of LLM and Tool Selector.
+
+**4.1 LLM**
+
+The LLM is the language model that will be used to generate the test cases.
+
+
+.. tabs::
+
+  .. tab:: Fields
+
+    .. list-table::
+       :widths: 20 20 60
+       :header-rows: 1
+
+       * - Field
+         - Type
+         - Description
+       * - provider
+         - string
+         - The provider of the LLM. The provider can be either OpenAIChat or OpenAI
+       * - model_name
+         - string
+         - The model name of the LLM
+       * - temperature
+         - number
+         -
+       * - top_p
+         - number
+         -
+       * - frequency_penalty
+         - number
+         -
+       * - presence_penalty
+         - number
+         -
+       * - n
+         - number
+         -
+       * - best_of
+         - number
+         -
+
+
+  .. tab:: YAML
+
+    .. code-block:: yaml
+
+        llm:
+              provider: OpenAIChat
+              model_name: gpt-3.5-turbo-0613
+              temperature: 0
+              max_tokens: 1024
+              top_p: 1
+              frequency_penalty: 0
+              presence_penalty: 0
+              n: 1
+              best_of: 1
+
+  .. tab:: JSON
+
+    .. code-block:: json
+
+         {
+            "provider": "OpenAIChat",
+            "model_name": "gpt-3.5-turbo-0613",
+            "temperature": 0,
+            "max_tokens": 1024,
+            "top_p": 1,
+            "frequency_penalty": 0,
+            "presence_penalty": 0,
+            "n": 1,
+            "best_of": 1
+        }
+
+**4.2 Tool Selector**
+
+The tool selector is the alogrithm implementation that will be used to run the test cases against the permutations.
+
+
+.. tabs::
+
+  .. tab:: Fields
+
+    .. list-table::
+       :widths: 20 20 60
+       :header-rows: 1
+
+       * - Field
+         - Type
+         - Description
+       * - provider
+         - string
+         - The provider of the tool selector. The provider can be either OpenAI, Imprompt or Langchain
+       * - pipeline_name
+         - string
+         - The pipeline name of the tool selector that will be used to test the permutations
+       * - plugin_group_name
+         - string
+         - The plugin group name of the plugin group that will be used to test the permutations
+
+  .. tab:: YAML
+
+    .. code-block:: yaml
+
+        tool_selector:
+              provider: Langchain
+              pipeline_name: zero-shot-react-description
+              plugin_group_name: my_group1
+
+  .. tab:: JSON
+
+    .. code-block:: json
+
+         {
+            "provider": "Langchain",
+            "pipeline_name": "zero-shot-react-description",
+            "plugin_group_name": "my_group1"
         }
 
 

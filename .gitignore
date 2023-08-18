@@ -19,6 +19,7 @@ _build/*
 # C extensions
 *.so
 
+user_pass_keys.env
 # Distribution / packaging
 .Python
 build/

@@ -64,7 +64,7 @@ class GenerateTestCase(BaseModel):
 
 '''
 obj = GenerateTestCase(
-    openai_api_key="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",
+    openai_api_key="s",
     openplugin_manifest_url="https://assistant-management-data.s3.amazonaws.com/Klarna_Shopping.json",
     paths=["/users", "/groups"]
 )

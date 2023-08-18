@@ -1037,13 +1037,13 @@ pydantic = ">=1.8.2"
 
 [[package]]
 name = "openplugin"
-version = "0.0.20"
+version = "0.0.21"
 description = ""
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "openplugin-0.0.20-py3-none-any.whl", hash = "sha256:3054cb9dc6b8d4a772a131d82a61ca9de5034ce42b315e78387839c275f5ca52"},
-    {file = "openplugin-0.0.20.tar.gz", hash = "sha256:1dfb46c05a799842e919f436865da7e50ebeb9c174a7307720e4a21941efb743"},
+    {file = "openplugin-0.0.21-py3-none-any.whl", hash = "sha256:f0e87e656d09d370a55468deac9dbe4a6cf6776a03667bb849c3c2e9bd5b94c2"},
+    {file = "openplugin-0.0.21.tar.gz", hash = "sha256:68a1cd82b9a4f69b506bbadb3d02d0b8892a3d16133321091f80c17f56a060d6"},
 ]
 
 [package.dependencies]
@@ -2028,4 +2028,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "5936dbfb310603b9e2ca59a5b22eb3f7be53736fa947b6e5dd2f41a545176a64"
+content-hash = "a8c11543eb44e06a94a60214fc31327a2e6b8113d30e223b5b21f885ac0dc104"

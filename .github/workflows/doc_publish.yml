@@ -26,7 +26,7 @@ jobs:
         run: |
           poetry run sphinx-build docs/source docs/build
       - name: Create CNAME File
-        run: echo "permutate.org" > _build/CNAME
+        run: echo "permutate.org" > docs/build/CNAME
       - name: Publish Docs
         uses: peaceiris/actions-gh-pages@v3
         with:

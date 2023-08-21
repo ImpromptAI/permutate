@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from permutate.api import job
 from permutate.api import permutations
 from permutate.api import cases
+from permutate.api import ws_job
 
 API_PREFIX = "/api"
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
@@ -26,6 +27,7 @@ def create_app() -> FastAPI:
     router.include_router(job.router)
     router.include_router(permutations.router)
     router.include_router(cases.router)
+    router.include_router(ws_job.router)
     app.include_router(router, prefix=API_PREFIX)
 
     app.add_exception_handler(HTTPException, http_error_handler)

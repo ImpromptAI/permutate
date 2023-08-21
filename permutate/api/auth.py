@@ -25,3 +25,14 @@ async def get_api_key(api_key_header: str = Security(api_key_header)):
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN, detail="Could not validate API KEY"
         )
+
+
+def has_authenticated(websocket):
+    if len(keys) == 0:
+        return True
+    param = dict(websocket.query_params)
+    if param and param.get("token"):
+        x_access_token = param.get("token")
+        if x_access_token in keys:
+            return True
+    return False

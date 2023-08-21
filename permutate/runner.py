@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import requests
 import webbrowser
 from tqdm import tqdm
@@ -29,13 +30,15 @@ class Runner:
         self.start_request(request, output_directory, save_to_html, save_to_csv)
 
     def start_request(self, request: JobRequest, output_directory: str = None,
-                      save_to_html=True, save_to_csv=True) -> JobResponse:
+                      save_to_html=True, save_to_csv=True,
+                      websocket=None) -> JobResponse:
         self.progress_counter = int(100 / (
                 len(request.permutations) * len(request.test_cases)))
         batch_job_started_on = datetime.now()
         all_details = []
         for permutation in request.permutations:
-            permutation_details = self.single_permutation(request, permutation)
+            permutation_details = self.single_permutation(request, permutation,
+                                                          websocket)
             all_details.extend(permutation_details)
 
         summary = JobSummary.build_from_details(all_details)
@@ -49,6 +52,8 @@ class Runner:
             details=all_details,
             output_directory=output_directory
         )
+        if websocket is not None:
+            asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
         response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
@@ -57,7 +62,7 @@ class Runner:
             webbrowser.open(url)
         return response
 
-    def single_permutation(self, request, permutation):
+    def single_permutation(self, request, permutation, websocket=None):
         permutation_details = []
         permutation_summary = f"{permutation.llm.get('provider')}[{permutation.llm.get('model_name')}] - {permutation.tool_selector.get('provider')}[{permutation.tool_selector.get('pipeline_name')}]"
         for test_case in request.test_cases:
@@ -72,6 +77,8 @@ class Runner:
                 plugin_group,
                 permutation_summary
             )
+            if websocket is not None:
+                asyncio.run(websocket.send_text(detail.json()))
             permutation_details.append(detail)
         return permutation_details
 

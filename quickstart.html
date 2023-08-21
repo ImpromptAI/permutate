@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Quickstart &#8212; permutate 0.0.10 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Build a permutate request" href="request.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/permutate-logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="_static/permutate-logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+
+
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Quickstart</a></li>
+
+
+
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="request.html">Build a permutate request</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="apis/index.html">APIs</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="apis/start_a_batch_job.html">Start a batch job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apis/start_a_batch_job_ws.html">Start a batch job with websockets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apis/interactive_run.html">Interactive run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apis/generate_test_cases.html">Generate test cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apis/get_permutations.html">Get Permutations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apis/start_a_batch_job_ws.html">Start a batch job with websockets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/ImpromptAI/permutate">Github Repo</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/quickstart.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Quickstart</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Quickstart</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-environment-variables">Setup environment variables</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#start-permutate-http-server">Start permutate http server</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#using-permutate-as-a-library-to-run-tests">Using permutate as a library to run tests</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#docker">Docker</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#result-from-permutate-run-command">Result from permutate run command</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#html-report">1. HTML Report:</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#csv-report">2. CSV Report.</a></li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading">#</a></h1>
+<p>To install using pip, run:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>permutate
+</pre></div>
+</div>
+<p>You can verify you have permutate installed by running:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>permutate<span class="w"> </span>--help
+</pre></div>
+</div>
+</section>
+<section id="setup-environment-variables">
+<h1>Setup environment variables<a class="headerlink" href="#setup-environment-variables" title="Permalink to this heading">#</a></h1>
+<p>Before you run the application, be sure you have credentials configured.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>&lt;your<span class="w"> </span>key&gt;<span class="w"> </span>//<span class="w"> </span><span class="k">if</span><span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span>OpenAI<span class="w"> </span>LLM
+<span class="nb">export</span><span class="w"> </span><span class="nv">COHERE_API_KEY</span><span class="o">=</span>&lt;your<span class="w"> </span>key&gt;<span class="w"> </span>//<span class="w"> </span><span class="k">if</span><span class="w"> </span>you<span class="w"> </span>wan<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span>Cohere<span class="w"> </span>LLM
+<span class="nb">export</span><span class="w"> </span><span class="nv">GOOGLE_APPLICATION_CREDENTIALS</span><span class="o">=</span>&lt;credential_file_path:<span class="w"> </span>/usr/app/application_default_credentials.json&gt;<span class="w"> </span>//<span class="w"> </span><span class="k">if</span><span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span>Google<span class="w"> </span>LLM
+</pre></div>
+</div>
+</section>
+<section id="start-permutate-http-server">
+<h1>Start permutate http server<a class="headerlink" href="#start-permutate-http-server" title="Permalink to this heading">#</a></h1>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>start_api_server.py
+</pre></div>
+</div>
+<p>or with poetry</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>start_api_server.py
+</pre></div>
+</div>
+</section>
+<section id="using-permutate-as-a-library-to-run-tests">
+<h1>Using permutate as a library to run tests<a class="headerlink" href="#using-permutate-as-a-library-to-run-tests" title="Permalink to this heading">#</a></h1>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>Usage:<span class="w"> </span>permutation<span class="w"> </span>run<span class="w"> </span><span class="o">[</span>TEST_FILE_PATH<span class="o">]</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+
+Run<span class="w"> </span>a<span class="w"> </span>permutation<span class="w"> </span>batch
+
+Arguments:
+<span class="w">  </span>test_file_path<span class="w">        </span>Plugin<span class="w"> </span><span class="nb">test</span><span class="w"> </span>setup<span class="w"> </span>file.
+<span class="w">                        </span>default:<span class="w"> </span>/permutate/workspace/plugin_test.yaml
+
+Options:
+<span class="w">  </span>--help<span class="w">                                   </span>show<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span><span class="nb">exit</span>
+<span class="w">  </span>--save-to-html<span class="w">  </span>--no-save-to-html<span class="w">        </span>Save<span class="w"> </span>the<span class="w"> </span>results<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>permutation<span class="w"> </span>run<span class="w"> </span>to<span class="w"> </span>an<span class="w"> </span>html<span class="w"> </span>file.
+<span class="w">                                           </span>default:<span class="w"> </span>save-to-html
+<span class="w">  </span>--save-to-csv<span class="w">   </span>--no-save-to-csv<span class="w">         </span>Save<span class="w"> </span>the<span class="w"> </span>results<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>permutation<span class="w"> </span>run<span class="w"> </span>to<span class="w"> </span>a<span class="w"> </span>csv<span class="w"> </span>file.
+<span class="w">                                           </span>default:<span class="w"> </span>no-save-to-csv
+<span class="w">  </span>--output-directory<span class="w">                       </span>Path<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>directory<span class="w"> </span>where<span class="w"> </span>the<span class="w"> </span>output<span class="w"> </span>files<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>saved.
+<span class="w">                                           </span>default:<span class="w"> </span>/permutate/workspace/output/
+</pre></div>
+</div>
+</section>
+<section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h1>
+<p>This command will run the tests defined in the plugin_test.yaml file and save the results to a csv file and an html file in the directory pointed by the flag –output-directory.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>permutate<span class="w"> </span>run<span class="w"> </span>tests/files/plugin_test.yaml<span class="w"> </span>--output-directory<span class="w"> </span>tests/files/output/<span class="w"> </span>--save-to-csv<span class="w"> </span>--save-to-html
+</pre></div>
+</div>
+<p>This command will run the tests on a sample test file provided in the package and save the results to an html file. This command can be used to see the sample output.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>permutate<span class="w"> </span>run
+</pre></div>
+</div>
+</section>
+<section id="docker">
+<h1>Docker<a class="headerlink" href="#docker" title="Permalink to this heading">#</a></h1>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </span>/LOCALPATH/plugin_test.yaml:/usr/app/plugin_test.yaml<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;OPENAI_KEY=your-key&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;COHERE_API_KEY=your-key&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;GOOGLE_APPLICATION_CREDENTIALS=your-file-path&quot;</span><span class="w"> </span>shrikant14/permutate:latest
+</pre></div>
+</div>
+</section>
+<section id="result-from-permutate-run-command">
+<h1>Result from permutate run command<a class="headerlink" href="#result-from-permutate-run-command" title="Permalink to this heading">#</a></h1>
+<p>You can save your permutate run output to:</p>
+</section>
+<section id="html-report">
+<h1>1. HTML Report:<a class="headerlink" href="#html-report" title="Permalink to this heading">#</a></h1>
+<p>You can save your permutation run output to an HTML Report that presents the results of the permutation run in a structured and visually appealing format.</p>
+<img alt="Permutate Suite" class="align-center" src="_images/sample_result_screenshot.png" />
+</section>
+<section id="csv-report">
+<h1>2. CSV Report.<a class="headerlink" href="#csv-report" title="Permalink to this heading">#</a></h1>
+<p>You can save your permutation run output to two csv files: one for the permutation run summary and one for the permutation run details.</p>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="introduction.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Introduction</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="request.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Build a permutate request</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Quickstart</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-environment-variables">Setup environment variables</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#start-permutate-http-server">Start permutate http server</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#using-permutate-as-a-library-to-run-tests">Using permutate as a library to run tests</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#docker">Docker</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#result-from-permutate-run-command">Result from permutate run command</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#html-report">1. HTML Report:</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#csv-report">2. CSV Report.</a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Shrikant M
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2023, Imprompt.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

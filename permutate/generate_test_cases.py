@@ -4,19 +4,24 @@ import requests
 import json
 
 
+# Define a Pydantic BaseModel for the 'Path' class
 class Path(BaseModel):
     path: str
     method: str
 
 
+# Define a Pydantic BaseModel for generating test cases
 class GenerateTestCase(BaseModel):
     openplugin_manifest_url: str
     openai_api_key: str
     for_paths: Optional[List[Path]] = []
 
     def generate_test_cases(self):
+        # Retrieve the JSON data from the specified URL
         openplugin_manifest_json = requests.get(self.openplugin_manifest_url).json()
+        # Extract plugin operations from the JSON data
         plugin_operations = openplugin_manifest_json.get("plugin_operations", {})
+        # Iterate through paths and methods
         for path in plugin_operations.keys():
             for method in plugin_operations.get(path):
                 if self.for_paths and len(self.for_paths) > 0:
@@ -26,6 +31,7 @@ class GenerateTestCase(BaseModel):
                 human_usage_examples = plugin_operations.get(path).get(method).get(
                     "human_usage_examples", [])
                 more_examples = []
+                # Generate variations for each human usage example
                 for example in human_usage_examples:
                     more_examples.extend(self.generate_variations(example))
                 human_usage_examples.extend(more_examples)
@@ -33,6 +39,7 @@ class GenerateTestCase(BaseModel):
 
     def generate_variations(self, human_usage_example):
         url = "https://api.openai.com/v1/chat/completions"
+        # Prepare the request payload for generating variations
         payload = json.dumps({
             "model": "gpt-3.5-turbo",
             "messages": [
@@ -50,7 +57,9 @@ class GenerateTestCase(BaseModel):
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {self.openai_api_key}'
         }
+        # Send a POST request to OpenAI API to generate variations
         response = requests.request("POST", url, headers=headers, data=payload)
+        # Extract and format the variations from the response
         choices = response.json().get("choices", [])[0].get("message", {}).get(
             "content")
         res = []
@@ -60,15 +69,3 @@ class GenerateTestCase(BaseModel):
             else:
                 res.append(choice)
         return res
-
-
-'''
-obj = GenerateTestCase(
-    openai_api_key="s",
-    openplugin_manifest_url="https://assistant-management-data.s3.amazonaws.com/Klarna_Shopping.json",
-    paths=["/users", "/groups"]
-)
-print(obj.generate_test_cases())
-'''
-# ex = "Email the report to shrikant@brandops.io"
-# obj.generate_variations(ex)

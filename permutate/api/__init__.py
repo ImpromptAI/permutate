@@ -9,29 +9,38 @@ from permutate.api import permutations
 from permutate.api import cases
 from permutate.api import ws_job
 
+# Define an API prefix for routes
 API_PREFIX = "/api"
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
 
 
+# Function to create the FastAPI application instance
 def create_app() -> FastAPI:
+    # Create a FastAPI instance with title and documentation settings
     app = FastAPI(
         title="Permutate",
         openapi_url=f"{API_PREFIX}/openapi.json",
         docs_url=f"{API_PREFIX}/docs"
     )
+    # Set the root path for the application in production environment
     if ENVIRONMENT == 'production':
         app.root_path = "/permutate/"
 
-    # add routes
+    # Create an APIRouter instance to organize routes
     router = APIRouter()
+    # Include various routers from 'permutate' into the main router
     router.include_router(job.router)
     router.include_router(permutations.router)
     router.include_router(cases.router)
     router.include_router(ws_job.router)
+
+    # Include the main router into the FastAPI app with the specified prefix
     app.include_router(router, prefix=API_PREFIX)
 
+    # Add an exception handler for HTTPException using the custom error handler
     app.add_exception_handler(HTTPException, http_error_handler)
-    # Allow CORS
+
+    # Allow Cross-Origin Resource Sharing (CORS)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -42,4 +51,5 @@ def create_app() -> FastAPI:
     return app
 
 
+# Create the FastAPI application instance
 app = create_app()

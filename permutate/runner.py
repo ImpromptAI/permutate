@@ -10,9 +10,11 @@ from .job_request_schema import JobRequest, TestCaseType
 from .job_response_schema import JobResponse, JobSummary, JobDetail
 from openplugin import run_plugin_selector, run_api_signature_selector
 
+# Get the OpenAI API key from the environment variable
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 
+# Define a Runner class to handle job execution
 class Runner:
 
     def __init__(self, show_progress_bar: bool = True):
@@ -23,6 +25,7 @@ class Runner:
 
     def start(self, file_path: str, output_directory: str, save_to_html=True,
               save_to_csv=True):
+        # Load a job request from a YAML file
         logger.info("Starting permutate")
         with open(file_path) as f:
             yaml_file = f.read()
@@ -32,6 +35,7 @@ class Runner:
     def start_request(self, request: JobRequest, output_directory: str = None,
                       save_to_html=True, save_to_csv=True,
                       websocket=None) -> JobResponse:
+        # Start a job request and handle its execution
         self.progress_counter = int(100 / (
                 len(request.permutations) * len(request.test_cases)))
         batch_job_started_on = datetime.now()
@@ -63,6 +67,7 @@ class Runner:
         return response
 
     def single_permutation(self, request, permutation, websocket=None):
+        # Execute a single permutation of a job request
         permutation_details = []
         permutation_summary = f"{permutation.llm.get('provider')}[{permutation.llm.get('model_name')}] - {permutation.tool_selector.get('provider')}[{permutation.tool_selector.get('pipeline_name')}]"
         for test_case in request.test_cases:
@@ -86,20 +91,9 @@ class Runner:
     def run_single_permutation_test_case(test_case, test_plugin, config, permutation,
                                          plugin_group,
                                          permutation_summary):
-
-        '''
-        #TODO: Add support for Openplugin library
-        if config.use_openplugin_library:
-            try:
-                response_json = run_plugin_selector(payload)
-                if response_json is None:
-                    passed = False
-            except Exception as e:
-                print(e)
-                response_json = None
-                passed = False
-        '''
+        # Run a single test case for a permutation
         passed = True
+        # Determine the type of test case (Plugin Selector or API Signature Selector)
         if config.tool_selector_endpoint is None:
             if test_case.type == TestCaseType.PLUGIN_SELECTOR:
                 payload = {

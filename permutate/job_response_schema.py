@@ -1,9 +1,13 @@
-import csv, json, os
-from decimal import Decimal
+import csv
+import json
+import os
 from datetime import datetime
+from decimal import Decimal
+from typing import Dict, List, Optional
+
+from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
-from typing import List, Optional, Dict
-from jinja2 import FileSystemLoader, Environment
+
 from .job_request_schema import Permutation, Plugin
 
 
@@ -30,8 +34,18 @@ class JobDetail(BaseModel):
 
     def get_tool_case_result(self):
         if self.test_type == "plugin_selector":
-            return "Passed" if self.is_plugin_detected and self.is_plugin_operation_found else "Failed"
-        return "Passed" if self.is_plugin_detected and self.is_plugin_operation_found and self.is_plugin_parameter_mapped else "Failed"
+            return (
+                "Passed"
+                if self.is_plugin_detected and self.is_plugin_operation_found
+                else "Failed"
+            )
+        return (
+            "Passed"
+            if self.is_plugin_detected
+            and self.is_plugin_operation_found
+            and self.is_plugin_parameter_mapped
+            else "Failed"
+        )
 
 
 class JobDetailOut(JobDetail):
@@ -65,8 +79,12 @@ class JobSummary(BaseModel):
         for detail in details:
             if detail.get_tool_case_result() == "Failed":
                 total_failed_cases += 1
-            total_run_time += detail.response_time_sec if detail.response_time_sec else 0
-            total_llm_tokens_used += detail.total_llm_tokens_used if detail.total_llm_tokens_used else 0
+            total_run_time += (
+                detail.response_time_sec if detail.response_time_sec else 0
+            )
+            total_llm_tokens_used += (
+                detail.total_llm_tokens_used if detail.total_llm_tokens_used else 0
+            )
             total_llm_api_cost += detail.llm_api_cost if detail.llm_api_cost else 0
             passed_step_a += 1 if detail.is_plugin_detected else 0
             passed_step_b += 1 if detail.is_plugin_operation_found else 0
@@ -84,7 +102,7 @@ class JobSummary(BaseModel):
             average_response_time_sec=round(total_run_time / len(details), 2),
             total_llm_tokens_used=total_llm_tokens_used,
             average_llm_tokens_used=round(total_llm_tokens_used / len(details), 2),
-            total_llm_api_cost=total_llm_api_cost
+            total_llm_api_cost=total_llm_api_cost,
         )
 
 
@@ -135,7 +153,9 @@ class JobResponse(BaseModel):
             with open(summary_filename, "w") as fp:
                 writer = csv.DictWriter(fp, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerow(json.loads(JobSummaryOut(**self.summary.dict()).json()))
+                writer.writerow(
+                    json.loads(JobSummaryOut(**self.summary.dict()).json())
+                )
 
             fieldnames = list(JobDetail.schema()["properties"].keys())
             detail_filename = f"{self.output_directory}{self.job_name}-details.csv"
@@ -156,7 +176,8 @@ class JobResponse(BaseModel):
                     writer = csv.DictWriter(fp, fieldnames=fieldnames)
                     writer.writeheader()
                     writer.writerow(
-                        json.loads(JobSummaryOut(**self.summary.dict()).json()))
+                        json.loads(JobSummaryOut(**self.summary.dict()).json())
+                    )
 
                 fieldnames = list(JobDetail.schema()["properties"].keys())
                 detail_filename = f"{self.output_directory}{self.job_name}{environment_name}_details.csv"
@@ -166,7 +187,8 @@ class JobResponse(BaseModel):
                     for detail in self.details:
                         if detail.permutation_name == permutation.name:
                             writer.writerow(
-                                json.loads(JobDetail(**detail.dict()).json()))
+                                json.loads(JobDetail(**detail.dict()).json())
+                            )
                 print(f"Summary csv result\n\t{summary_filename}")
                 print(f"Details csv result\n\t{detail_filename}")
 
@@ -182,7 +204,7 @@ class JobResponse(BaseModel):
             "Response Time(in seconds)",
             "LLM Tokens Used",
             "LLM API Cost",
-            "Tool Selected"
+            "Tool Selected",
         ]
         rows = []
         group_details = self.group_details()
@@ -195,8 +217,12 @@ class JobResponse(BaseModel):
                 tool_case_result = detail.get_tool_case_result()
                 permutation = self.get_permutation_by_name(detail.permutation_name)
                 row = [
-                    {"data": tool_case_result,
-                     "class_name": "fail" if tool_case_result == "Failed" else "pass"},
+                    {
+                        "data": tool_case_result,
+                        "class_name": "fail"
+                        if tool_case_result == "Failed"
+                        else "pass",
+                    },
                     {"data": test_types.get(test_case_name)},
                     {"data": permutation.tool_selector.get("provider")},
                     {"data": permutation.tool_selector.get("pipeline_name")},
@@ -215,13 +241,14 @@ class JobResponse(BaseModel):
                         "operation": detail.plugin_operation,
                         "operation_found": detail.is_plugin_operation_found,
                         "params": detail.plugin_parameters_mapped,
-                        "params_found": detail.is_plugin_parameter_mapped
-                    }
+                        "params_found": detail.is_plugin_parameter_mapped,
+                    },
                 ]
                 rows.append({"data": row, "type": "data"})
         current_dir = os.path.dirname(os.path.abspath(__file__))
         template_env = Environment(
-            loader=FileSystemLoader(searchpath=f"{current_dir}/templates"))
+            loader=FileSystemLoader(searchpath=f"{current_dir}/templates")
+        )
         template = template_env.get_template("job_result_template.html")
         summary_headers = [
             "Total Test Cases",
@@ -230,24 +257,32 @@ class JobResponse(BaseModel):
             "Average Response Time(in sec)",
             "Total Tokens Used",
             "Average Tokens Used",
-            "Total API Cost"
+            "Total API Cost",
         ]
         summary_rows = []
-        summary_rows.append([
-            {"data": self.summary.total_test_cases},
-            {"data": self.summary.failed_cases},
-            {"data": self.summary.total_run_time},
-            {"data": self.summary.average_response_time_sec},
-            {"data": self.summary.total_llm_tokens_used},
-            {"data": self.summary.average_llm_tokens_used},
-            {"data": self.summary.total_llm_api_cost},
-        ])
+        summary_rows.append(
+            [
+                {"data": self.summary.total_test_cases},
+                {"data": self.summary.failed_cases},
+                {"data": self.summary.total_run_time},
+                {"data": self.summary.average_response_time_sec},
+                {"data": self.summary.total_llm_tokens_used},
+                {"data": self.summary.average_llm_tokens_used},
+                {"data": self.summary.total_llm_api_cost},
+            ]
+        )
         plugin = self.test_plugin.manifest_url
         started_on = self.started_on.strftime("%Y-%m-%d %H:%M:%S")
         ended_on = self.completed_on.strftime("%Y-%m-%d %H:%M:%S")
-        html = template.render(plugin=plugin, started_on=started_on, ended_on=ended_on,
-                               summary_headers=summary_headers,
-                               summary_rows=summary_rows, headers=header, rows=rows)
+        html = template.render(
+            plugin=plugin,
+            started_on=started_on,
+            ended_on=ended_on,
+            summary_headers=summary_headers,
+            summary_rows=summary_rows,
+            headers=header,
+            rows=rows,
+        )
         filename = f"{self.job_name}-result.html"
 
         with open(f"{self.output_directory}{filename}", "w") as f:

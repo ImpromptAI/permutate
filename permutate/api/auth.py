@@ -1,8 +1,9 @@
 import os
+
 from dotenv import load_dotenv
-from fastapi import Security, HTTPException
-from starlette.status import HTTP_403_FORBIDDEN
+from fastapi import HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader
+from starlette.status import HTTP_403_FORBIDDEN
 
 # Create an empty set to store API keys
 keys = set()

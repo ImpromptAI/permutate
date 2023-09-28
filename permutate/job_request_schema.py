@@ -1,9 +1,9 @@
-import requests
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel
 from pydantic_yaml import YamlModel
-from typing import List, Optional, Dict
-from pydantic import BaseModel, root_validator
 
 
 class Permutation(BaseModel):
@@ -40,7 +40,7 @@ class TestCase(BaseModel):
 
 class Config(BaseModel):
     openplugin_api_key: Optional[str]
-    use_openplugin_library: Optional[bool]
+    use_openplugin_library: bool = True
     openai_api_key: Optional[str]
     tool_selector_endpoint: Optional[str]
 
@@ -59,12 +59,16 @@ class JobRequest(YamlModel):
             if plugin_group.name == plugin_group_name:
                 return plugin_group
 
-    def get_plugin_group_from_permutation(self,
-                                          permutation: Permutation) -> PluginGroup:
+    def get_plugin_group_from_permutation(
+        self, permutation: Permutation
+    ) -> PluginGroup:
         for plugin_group in self.plugin_groups:
-            if plugin_group.name == permutation.tool_selector.get("plugin_group_name"):
+            if plugin_group.name == permutation.tool_selector.get(
+                "plugin_group_name"
+            ):
                 return plugin_group
 
     def get_job_request_name(self):
-        return "{}-{}-{}".format(self.name, self.version,
-                                 datetime.now().strftime("%Y-%m-%d"))
+        return "{}-{}-{}".format(
+            self.name, self.version, datetime.now().strftime("%Y-%m-%d")
+        )

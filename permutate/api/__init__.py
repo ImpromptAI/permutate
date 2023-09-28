@@ -1,17 +1,16 @@
 import os
-from fastapi import FastAPI
-from fastapi import APIRouter
-from .http_error import http_error_handler
-from starlette.exceptions import HTTPException
+
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from permutate.api import job
-from permutate.api import permutations
-from permutate.api import cases
-from permutate.api import ws_job
+from starlette.exceptions import HTTPException
+
+from permutate.api import cases, generate_permutations, job, permutations, ws_job
+
+from .http_error import http_error_handler
 
 # Define an API prefix for routes
 API_PREFIX = "/api"
-ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
 
 
 # Function to create the FastAPI application instance
@@ -20,10 +19,10 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Permutate",
         openapi_url=f"{API_PREFIX}/openapi.json",
-        docs_url=f"{API_PREFIX}/docs"
+        docs_url=f"{API_PREFIX}/docs",
     )
     # Set the root path for the application in production environment
-    if ENVIRONMENT == 'production':
+    if ENVIRONMENT == "production":
         app.root_path = "/permutate/"
 
     # Create an APIRouter instance to organize routes
@@ -33,6 +32,7 @@ def create_app() -> FastAPI:
     router.include_router(permutations.router)
     router.include_router(cases.router)
     router.include_router(ws_job.router)
+    router.include_router(generate_permutations.router)
 
     # Include the main router into the FastAPI app with the specified prefix
     app.include_router(router, prefix=API_PREFIX)

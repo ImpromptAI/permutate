@@ -1,11 +1,16 @@
-import typer, os
+import os
 from pathlib import Path
-from .runner import Runner
 from typing import Optional
+
+import typer
 from typing_extensions import Annotated
 
+from .runner import Runner
+
 app = typer.Typer()
-default_file_path = Path(f"{os.path.dirname(os.path.abspath(__file__))}/workspace/plugin_test.yaml")
+default_file_path = Path(
+    f"{os.path.dirname(os.path.abspath(__file__))}/workspace/plugin_test.yaml"
+)
 
 
 @app.callback()
@@ -17,13 +22,30 @@ def callback():
 
 @app.command()
 def run(
-        test_file_path: Annotated[Optional[Path], typer.Argument(help="Plugin test setup file.")] = default_file_path,
-        save_to_html: Annotated[bool, typer.Option(help="Save the final report as HTML.",
-                                                   rich_help_panel="Customization and Utils")] = True,
-        save_to_csv: Annotated[bool, typer.Option(help="Save the final report as csv.",
-                                                  rich_help_panel="Customization and Utils")] = False,
-        output_directory: Annotated[Optional[Path], typer.Option(help="Directory to save the final report.",
-                                                                 rich_help_panel="Customization and Utils")] = None,
+    test_file_path: Annotated[
+        Optional[Path], typer.Argument(help="Plugin test setup file.")
+    ] = default_file_path,
+    save_to_html: Annotated[
+        bool,
+        typer.Option(
+            help="Save the final report as HTML.",
+            rich_help_panel="Customization and Utils",
+        ),
+    ] = True,
+    save_to_csv: Annotated[
+        bool,
+        typer.Option(
+            help="Save the final report as csv.",
+            rich_help_panel="Customization and Utils",
+        ),
+    ] = False,
+    output_directory: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Directory to save the final report.",
+            rich_help_panel="Customization and Utils",
+        ),
+    ] = None,
 ):
     """
     Run the permutation job
@@ -32,9 +54,15 @@ def run(
         typer.echo(f"File '{test_file_path}' does not exist.")
         raise typer.Exit(code=1)
     if test_file_path.is_dir():
-        typer.echo(f"File '{test_file_path}' is a directory. It should be yaml or json file.")
+        typer.echo(
+            f"File '{test_file_path}' is a directory. It should be yaml or json file."
+        )
         raise typer.Exit(code=1)
-    if test_file_path.suffix != ".json" and test_file_path.suffix != ".yaml" and test_file_path.suffix != ".yml":
+    if (
+        test_file_path.suffix != ".json"
+        and test_file_path.suffix != ".yaml"
+        and test_file_path.suffix != ".yml"
+    ):
         typer.echo(f"File '{test_file_path}' is not a yaml or json file.")
         raise typer.Exit(code=1)
     if output_directory is not None:

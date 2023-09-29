@@ -50,6 +50,8 @@ def run(
     """
     Run the permutation job
     """
+    if test_file_path is None:
+        raise Exception("test_file_path is None")
     if not test_file_path.exists():
         typer.echo(f"File '{test_file_path}' does not exist.")
         raise typer.Exit(code=1)
@@ -72,10 +74,10 @@ def run(
         if not output_directory.is_dir():
             typer.echo(f"Save directory '{output_directory}' is not a directory.")
             raise typer.Exit(code=1)
+        output_dir = str(output_directory)
     else:
-        output_directory = f"{os.path.dirname(os.path.abspath(__file__))}/workspace/"
+        output_dir = f"{os.path.dirname(os.path.abspath(__file__))}/workspace/"
 
-    output_dir = str(output_directory)
     if not output_dir.endswith("/"):
         output_dir = output_dir + "/"
     runner = Runner()

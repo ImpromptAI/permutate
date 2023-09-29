@@ -4,7 +4,14 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException
 
-from permutate.api import cases, generate_permutations, job, permutations, ws_job
+from permutate.api import (
+    cases,
+    generate_permutations,
+    job,
+    permutations,
+    plugin_operation_params,
+    ws_job,
+)
 
 from .http_error import http_error_handler
 
@@ -33,6 +40,7 @@ def create_app() -> FastAPI:
     router.include_router(cases.router)
     router.include_router(ws_job.router)
     router.include_router(generate_permutations.router)
+    router.include_router(plugin_operation_params.router)
 
     # Include the main router into the FastAPI app with the specified prefix
     app.include_router(router, prefix=API_PREFIX)

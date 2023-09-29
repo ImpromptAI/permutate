@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from fastapi.security.api_key import APIKey
@@ -16,7 +18,7 @@ router = APIRouter(
 @router.post("/generate-test-cases")
 def generate_test_cases(
     test_cases: GenerateTestCase, api_key: APIKey = Depends(auth.get_api_key)
-):
+) -> Any:
     try:
         # Call the 'generate_test_cases' method of the 'GenerateTestCase' object
         return test_cases.generate_test_cases()

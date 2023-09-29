@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import HTTPException, Security
@@ -21,7 +22,7 @@ api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
 
 # Define a function to get and validate the API key
-async def get_api_key(api_key_header: str = Security(api_key_header)):
+async def get_api_key(api_key_header: str = Security(api_key_header)) -> Any:
     # If no keys are set up, allow any API key
     if len(keys) == 0:
         return api_key_header
@@ -35,7 +36,7 @@ async def get_api_key(api_key_header: str = Security(api_key_header)):
 
 
 # Define a function to check if a WebSocket connection is authenticated
-def has_authenticated(websocket):
+def has_authenticated(websocket: Any) -> bool:
     if len(keys) == 0:
         return True
     param = dict(websocket.query_params)

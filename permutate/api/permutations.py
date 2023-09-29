@@ -1,6 +1,6 @@
 import json
 from itertools import combinations
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
@@ -21,7 +21,7 @@ def get_llm_permutations(
     provider: Optional[str] = None,
     model_name: Optional[str] = None,
     api_key: APIKey = Depends(auth.get_api_key),
-):
+) -> Any:
     try:
         # Read data from a JSON file
         with open("permutate/templates/llm_permutations.json", "r") as json_file:
@@ -50,7 +50,7 @@ def get_llm_permutations(
 @router.get("/plugin-group-permutations")
 def get_plugin_group_permutations(
     request: Request, api_key: APIKey = Depends(auth.get_api_key)
-):
+) -> Any:
     try:
         # Get the list of 'plugin_manifest' query parameters
         plugins = request.query_params.getlist("plugin_manifest")
@@ -84,7 +84,7 @@ def get_tool_selector_permutations(
     provider: Optional[str] = None,
     pipeline_name: Optional[str] = None,
     api_key: APIKey = Depends(auth.get_api_key),
-):
+) -> Any:
     try:
         # Read data from a JSON file
         with open(

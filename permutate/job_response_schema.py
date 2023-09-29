@@ -64,7 +64,7 @@ class JobSummary(BaseModel):
     total_run_time: float
     average_response_time_sec: float
     total_llm_tokens_used: int
-    average_llm_tokens_used: int
+    average_llm_tokens_used: float
     total_llm_api_cost: Optional[float]
 
     @staticmethod
@@ -85,7 +85,8 @@ class JobSummary(BaseModel):
             total_llm_tokens_used += (
                 detail.total_llm_tokens_used if detail.total_llm_tokens_used else 0
             )
-            total_llm_api_cost += detail.llm_api_cost if detail.llm_api_cost else 0
+            total_llm_api_cost += int(detail.llm_api_cost) if detail.llm_api_cost else 0
+
             passed_step_a += 1 if detail.is_plugin_detected else 0
             passed_step_b += 1 if detail.is_plugin_operation_found else 0
             passed_step_c += 1 if detail.is_plugin_parameter_mapped else 0
@@ -101,7 +102,7 @@ class JobSummary(BaseModel):
             total_run_time=round(total_run_time, 2),
             average_response_time_sec=round(total_run_time / len(details), 2),
             total_llm_tokens_used=total_llm_tokens_used,
-            average_llm_tokens_used=round(total_llm_tokens_used / len(details), 2),
+            average_llm_tokens_used=round((total_llm_tokens_used / len(details)), 2),
             total_llm_api_cost=total_llm_api_cost,
         )
 
@@ -153,9 +154,7 @@ class JobResponse(BaseModel):
             with open(summary_filename, "w") as fp:
                 writer = csv.DictWriter(fp, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerow(
-                    json.loads(JobSummaryOut(**self.summary.dict()).json())
-                )
+                writer.writerow(json.loads(JobSummaryOut(**self.summary.dict()).json()))
 
             fieldnames = list(JobDetail.schema()["properties"].keys())
             detail_filename = f"{self.output_directory}{self.job_name}-details.csv"
@@ -171,7 +170,8 @@ class JobResponse(BaseModel):
             for permutation in self.permutations:
                 environment_name = permutation.name
                 fieldnames = list(JobSummary.schema()["properties"].keys())
-                summary_filename = f"{self.output_directory}{self.job_name}{environment_name}_summary.csv"
+                summary_filename = f"{self.output_directory}{self.job_name}\
+                    {environment_name}_summary.csv"
                 with open(summary_filename, "w") as fp:
                     writer = csv.DictWriter(fp, fieldnames=fieldnames)
                     writer.writeheader()
@@ -180,7 +180,8 @@ class JobResponse(BaseModel):
                     )
 
                 fieldnames = list(JobDetail.schema()["properties"].keys())
-                detail_filename = f"{self.output_directory}{self.job_name}{environment_name}_details.csv"
+                detail_filename = f"{self.output_directory}{self.job_name}\
+                    {environment_name}_details.csv"
                 with open(detail_filename, "w") as fp:
                     writer = csv.DictWriter(fp, fieldnames=fieldnames)
                     writer.writeheader()

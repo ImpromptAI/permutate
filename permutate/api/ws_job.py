@@ -1,6 +1,7 @@
 import asyncio
 import json
 import threading
+from typing import Any
 
 from fastapi import APIRouter, WebSocket
 
@@ -15,7 +16,7 @@ router = APIRouter(
 
 
 # Define a function to start a batch job
-def start_batch_job(request_json, websocket):
+def start_batch_job(request_json: dict, websocket: WebSocket) -> Any:
     # Create a JobRequest object from the provided JSON data
     job_request = JobRequest(**request_json)
     runner = Runner()
@@ -37,7 +38,7 @@ def start_batch_job(request_json, websocket):
 
 # Define a WebSocket route for starting batch jobs
 @router.websocket("/ws/start-batch-job")
-async def start_batch_job_ws(websocket: WebSocket):
+async def start_batch_job_ws(websocket: WebSocket) -> Any:
     print(f"CONNECTED TO WEBSOCKET: {websocket}")
     # Accept the WebSocket connection
     await websocket.accept()

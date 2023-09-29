@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from fastapi.security.api_key import APIKey
@@ -18,7 +20,7 @@ router = APIRouter(
 @router.post("/generate-permutations")
 def generate_permutations(
     request: GeneratePermutationsRequest, api_key: APIKey = Depends(auth.get_api_key)
-):
+) -> Any:
     try:
         if request.save_to_s3:
             obj = GeneratePermutations(request=request)

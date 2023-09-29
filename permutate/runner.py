@@ -3,10 +3,12 @@ import json
 import os
 import webbrowser
 from datetime import datetime
+from typing import Any, Optional
 
 import boto3
 import requests
 from dotenv import load_dotenv
+from fastapi import WebSocket
 from openplugin import run_api_signature_selector, run_plugin_selector
 from tqdm import tqdm
 
@@ -28,15 +30,15 @@ class Runner:
         self.show_progress_bar = show_progress_bar
         if self.show_progress_bar:
             self.pbar = tqdm(total=100)
-            self.progress_counter = None
+            self.progress_counter = 0
 
     def start(
         self,
         file_path: str,
         output_directory: str,
-        save_to_html=True,
-        save_to_csv=True,
-    ):
+        save_to_html: bool = True,
+        save_to_csv: bool = True,
+    ) -> None:
         # Load a job request from a YAML file
         logger.info("Starting permutate")
         with open(file_path) as f:
@@ -47,16 +49,17 @@ class Runner:
     def start_request(
         self,
         request: JobRequest,
-        output_directory: str = None,
-        save_to_html=True,
-        save_to_csv=True,
-        websocket=None,
-        save_to_s3=False,
+        output_directory: Optional[str],
+        save_to_html: bool = True,
+        save_to_csv: bool = True,
+        websocket: Optional[WebSocket] = None,
+        save_to_s3: bool = False,
     ) -> JobResponse:
         # Start a job request and handle its execution
         self.progress_counter = int(
             100 / (len(request.permutations) * len(request.test_cases))
         )
+
         batch_job_started_on = datetime.now()
         all_details = []
         for permutation in request.permutations:
@@ -81,9 +84,7 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(
-            break_down_by_environment=False
-        ) if save_to_csv else None
+        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -91,7 +92,7 @@ class Runner:
             print("---")
         return response
 
-    def save_to_s3(self, filename, content_type, content):
+    def save_to_s3(self, filename: str, content_type: str, content: str) -> dict:
         # Add to S3 Bucket
         s3 = boto3.client(
             "s3",
@@ -112,7 +113,9 @@ class Runner:
         public_url = full_url.split("?")[0]
         return {"s3_url": public_url}
 
-    def single_permutation(self, request, permutation, websocket=None):
+    def single_permutation(
+        self, request: Any, permutation: Any, websocket: Optional[WebSocket] = None
+    ) -> Any:
         # Execute a single permutation of a job request
         permutation_details = []
         permutation_summary = f"{permutation.llm.get('provider')}[{permutation.llm.get('model_name')}] - {permutation.tool_selector.get('provider')}[{permutation.tool_selector.get('pipeline_name')}]"
@@ -136,13 +139,13 @@ class Runner:
 
     @staticmethod
     def run_single_permutation_test_case(
-        test_case,
-        test_plugin,
-        config,
-        permutation,
-        plugin_group,
-        permutation_summary,
-    ):
+        test_case: Any,
+        test_plugin: Any,
+        config: Any,
+        permutation: Any,
+        plugin_group: Any,
+        permutation_summary: Any,
+    ) -> Any:
         # Run a single test case for a permutation
         passed = True
         # Determine the type of test case (Plugin Selector or API Signature Selector)
@@ -279,8 +282,7 @@ class Runner:
                         k: plugin_parameters_mapped[k]
                         for k in plugin_parameters_mapped
                         if k in expected_params
-                        and str(plugin_parameters_mapped[k])
-                        == str(expected_params[k])
+                        and str(plugin_parameters_mapped[k]) == str(expected_params[k])
                     }
                     if len(common_pairs) == len(expected_params):
                         parameter_mapped_percentage = 100

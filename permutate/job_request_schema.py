@@ -18,7 +18,6 @@ class Plugin(BaseModel):
 
 class PluginGroup(BaseModel):
     name: str
-    plugins: Dict
     plugins: List[Plugin]
 
 
@@ -54,19 +53,21 @@ class JobRequest(YamlModel):
     permutations: List[Permutation]
     test_cases: List[TestCase]
 
-    def get_plugin_group_from_name(self, plugin_group_name: str) -> PluginGroup:
+    def get_plugin_group_from_name(
+        self, plugin_group_name: str
+    ) -> Optional[PluginGroup]:
         for plugin_group in self.plugin_groups:
             if plugin_group.name == plugin_group_name:
                 return plugin_group
+        return None
 
     def get_plugin_group_from_permutation(
         self, permutation: Permutation
-    ) -> PluginGroup:
+    ) -> Optional[PluginGroup]:
         for plugin_group in self.plugin_groups:
-            if plugin_group.name == permutation.tool_selector.get(
-                "plugin_group_name"
-            ):
+            if plugin_group.name == permutation.tool_selector.get("plugin_group_name"):
                 return plugin_group
+        return None
 
     def get_job_request_name(self):
         return "{}-{}-{}".format(

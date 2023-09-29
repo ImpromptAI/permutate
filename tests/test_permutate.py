@@ -1,7 +1,7 @@
 from permutate.runner import Runner
 
 
-def test_batch_job():
+def test_batch_job() -> None:
     runner = Runner()
     runner.start(
         "tests/files/plugin_test.yaml",

@@ -1,5 +1,6 @@
 import os
 from itertools import combinations
+from typing import Optional
 
 import boto3
 import requests
@@ -10,7 +11,6 @@ from permutate import Config, JobRequest, Permutation, Plugin, TestCase, TestCas
 from permutate.generate_test_cases import generate_variations
 
 load_dotenv()
-DEFAULT_OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 S3_ACCESS_KEY = os.environ.get("S3_ACCESS_KEY")
 S3_SECRET_KEY = os.environ.get("S3_SECRET_KEY")
@@ -18,7 +18,7 @@ S3_SECRET_KEY = os.environ.get("S3_SECRET_KEY")
 
 class GeneratePermutationsRequest(BaseModel):
     openplugin_manifest_url: str
-    openai_api_key: str = DEFAULT_OPENAI_API_KEY
+    openai_api_key: Optional[str]
     save_to_s3: bool = False
     plugin_group_manifest_urls: list = []
 
@@ -26,7 +26,7 @@ class GeneratePermutationsRequest(BaseModel):
 class GeneratePermutations(BaseModel):
     request: GeneratePermutationsRequest
 
-    def gen_s3(self):
+    def gen_s3(self) -> dict:
         openplugin_manifest_json = requests.get(
             self.request.openplugin_manifest_url
         ).json()
@@ -52,13 +52,13 @@ class GeneratePermutations(BaseModel):
         public_url = full_url.split("?")[0]
         return {"s3_url": public_url}
 
-    def gen(self):
+    def gen(self) -> JobRequest:
         openplugin_manifest_json = requests.get(
             self.request.openplugin_manifest_url
         ).json()
         return self.gen_variations(openplugin_manifest_json)
 
-    def gen_variations(self, openplugin_manifest_json):
+    def gen_variations(self, openplugin_manifest_json) -> JobRequest:
         opeapi_doc_json = requests.get(
             openplugin_manifest_json.get("openapi_doc_url")
         ).json()
@@ -71,9 +71,7 @@ class GeneratePermutations(BaseModel):
             server_endpoint = opeapi_doc_json.get("servers")[0].get("url")
         plugin_groups = self.gen_plugin_groups()
         permutations = self.gen_permutations(plugin_groups)
-        test_cases = self.gen_test_variations(
-            openplugin_manifest_json, server_endpoint
-        )
+        test_cases = self.gen_test_variations(openplugin_manifest_json, server_endpoint)
         response = JobRequest(
             version="1.1.0",
             name=f'{openplugin_manifest_json.get("name", "").replace(" ", "_")}_test'.lower(),
@@ -85,7 +83,7 @@ class GeneratePermutations(BaseModel):
         )
         return response
 
-    def gen_plugin_groups(self):
+    def gen_plugin_groups(self) -> list:
         plugins = [self.request.openplugin_manifest_url]
         plugins.extend(self.request.plugin_group_manifest_urls)
         all_combinations = []
@@ -101,7 +99,7 @@ class GeneratePermutations(BaseModel):
                 index += 1
         return all_combinations
 
-    def gen_test_variations(self, openplugin_manifest_json, server_endpoint):
+    def gen_test_variations(self, openplugin_manifest_json, server_endpoint) -> list:
         test_cases = []
         plugin_operations = openplugin_manifest_json.get("plugin_operations", {})
         for path in plugin_operations.keys():
@@ -129,9 +127,7 @@ class GeneratePermutations(BaseModel):
                         )
                     )
                     index = index + 1
-                    for ex in generate_variations(
-                        self.request.openai_api_key, example
-                    ):
+                    for ex in generate_variations(self.request.openai_api_key, example):
                         test_cases.append(
                             TestCase(
                                 name=f"test-case {index}",
@@ -149,7 +145,7 @@ class GeneratePermutations(BaseModel):
 
             return test_cases
 
-    def gen_permutations(self, plugin_groups):
+    def gen_permutations(self, plugin_groups) -> list:
         permutations = []
         for pg in plugin_groups:
             permutations.append(

@@ -1,4 +1,5 @@
 import traceback
+from typing import Any
 
 import requests
 from fastapi import APIRouter, Depends
@@ -25,7 +26,9 @@ router = APIRouter(
 
 # Define a route to start a permutate job
 @router.post("/start-job")
-def start_job(job_request: JobRequest, api_key: APIKey = Depends(auth.get_api_key)):
+def start_job(
+    job_request: JobRequest, api_key: APIKey = Depends(auth.get_api_key)
+) -> Any:
     try:
         # Create a Runner instance
         runner = Runner()
@@ -45,7 +48,7 @@ def start_job(job_request: JobRequest, api_key: APIKey = Depends(auth.get_api_ke
 @router.post("/start-job-s3")
 def start_job_s3(
     permutation_test_url: str, api_key: APIKey = Depends(auth.get_api_key)
-):
+) -> Any:
     try:
         runner = Runner()
         test_json = requests.get(permutation_test_url).json()
@@ -64,14 +67,14 @@ def start_job_s3(
 
 # Define a route for interactive job runs
 @router.post("/interactive-run")
-def start_job(  # noqa: F811
+def start_job_interactive(  # noqa: F811
     config: Config,
     plugin: Plugin,
     plugin_group: PluginGroup,
     permutation: Permutation,
     test_case: TestCase,
     api_key: APIKey = Depends(auth.get_api_key),
-):
+) -> Any:
     try:
         # Create a JobRequest object using the provided parameters
         job_request = JobRequest(

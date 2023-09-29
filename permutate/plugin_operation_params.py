@@ -17,9 +17,13 @@ def get_plugin_operation_params(url: str):
         for method in openapi_doc_json["paths"][path]:
             if method == "get":
                 if openapi_doc_json["paths"][path][method].get("parameters"):
-                    param_map[f"{path}_{method}"] = openapi_doc_json["paths"][path][
-                        method
-                    ]["parameters"]
+                    parameters = openapi_doc_json["paths"][path][method][
+                        "parameters"
+                    ]
+                    for prop in parameters:
+                        prop["in"] = "query"
+                        prop["name"] = prop.pop("title")
+                    param_map[f"{path}_{method}"] = parameters
             elif method == "post":
                 ref = (
                     openapi_doc_json["paths"][path][method]
@@ -30,9 +34,15 @@ def get_plugin_operation_params(url: str):
                     .get("$ref")
                 )
                 if ref:
-                    param_map[f"{path}_{method}"] = refs[ref.split("/")[-1]][
-                        "properties"
-                    ]
+                    props = refs[ref.split("/")[-1]]["properties"]
+                    params = []
+                    if isinstance(props, dict):
+                        for key in props.keys():
+                            props[key]["name"] = key
+                            props[key]["in"] = "body"
+                            props[key]["name"] = prop[key].pop("title")
+                            params.append(props[key])
+                    param_map[f"{path}_{method}"] = params
     result_map = {}
 
     for operation in openplugin_manifest_json["plugin_operations"]:

@@ -15,5 +15,6 @@ async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
     Returns:
         JSONResponse: A JSON response containing the error message and status code.
     """
-    # Create a JSONResponse with a list containing the error detail and the HTTP status code
+    # Create a JSONResponse with a list containing the error detail and the
+    # HTTP status code
     return JSONResponse({"errors": [exc.detail]}, status_code=exc.status_code)

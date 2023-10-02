@@ -7,7 +7,7 @@ import requests
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from permutate import Config, JobRequest, Permutation, Plugin, TestCase, TestCaseType
+from permutate import Config, JobRequest, Permutation, Plugin, TestCase
 from permutate.generate_test_cases import generate_variations
 
 load_dotenv()
@@ -71,10 +71,16 @@ class GeneratePermutations(BaseModel):
             server_endpoint = opeapi_doc_json.get("servers")[0].get("url")
         plugin_groups = self.gen_plugin_groups()
         permutations = self.gen_permutations(plugin_groups)
-        test_cases = self.gen_test_variations(openplugin_manifest_json, server_endpoint)
+        test_cases = self.gen_test_variations(
+            openplugin_manifest_json, server_endpoint
+        )
+        name = (
+            f'{openplugin_manifest_json.get("name", "").replace(" ", "_")}'
+            f"_test".lower()
+        )
         response = JobRequest(
             version="1.1.0",
-            name=f'{openplugin_manifest_json.get("name", "").replace(" ", "_")}_test'.lower(),
+            name=name,
             config=Config(),
             test_plugin=Plugin(manifest_url=self.request.openplugin_manifest_url),
             plugin_groups=plugin_groups,
@@ -118,7 +124,6 @@ class GeneratePermutations(BaseModel):
                         TestCase(
                             name=f"test-case {index}",
                             prompt=example,
-                            type=TestCaseType.PLUGIN_SELECTOR,
                             expected_response=None,
                             expected_plugin_used=self.request.openplugin_manifest_url,
                             expected_api_used=complete_endpoint,
@@ -127,12 +132,13 @@ class GeneratePermutations(BaseModel):
                         )
                     )
                     index = index + 1
-                    for ex in generate_variations(self.request.openai_api_key, example):
+                    for ex in generate_variations(
+                        self.request.openai_api_key, example
+                    ):
                         test_cases.append(
                             TestCase(
                                 name=f"test-case {index}",
                                 prompt=ex,
-                                type=TestCaseType.PLUGIN_SELECTOR,
                                 expected_response=None,
                                 expected_plugin_used=self.request.openplugin_manifest_url,
                                 expected_api_used=complete_endpoint,

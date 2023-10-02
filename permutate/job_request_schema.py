@@ -1,15 +1,43 @@
+from abc import abstractmethod
 from datetime import datetime
-from enum import Enum
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 from pydantic_yaml import YamlModel
 
 
+class ToolSelector(BaseModel):
+    pipeline_name: str
+    llms: List[Dict[str, str]] = []
+
+
 class Permutation(BaseModel):
     name: str
-    llm: Dict
-    tool_selector: Dict
+    tool_selector: ToolSelector
+
+    @abstractmethod
+    def get_permutation_type(self):
+        pass
+
+    def get_llms(self):
+        return self.tool_selector.llms
+
+    def get_llm_provider(self):
+        return self.tool_selector.pipeline_name.split("_")[0]
+
+
+class PluginSelectorPermutation(Permutation):
+    permutation_type: str = "plugin_selector"
+
+    def get_permutation_type(self) -> str:
+        return self.permutation_type
+
+
+class OperationSelectorPermutation(Permutation):
+    permutation_type: str = "operation_selector"
+
+    def get_permutation_type(self) -> str:
+        return self.permutation_type
 
 
 class Plugin(BaseModel):
@@ -21,15 +49,9 @@ class PluginGroup(BaseModel):
     plugins: List[Plugin]
 
 
-class TestCaseType(Enum):
-    PLUGIN_SELECTOR = "plugin_selector"
-    API_SIGNATURE_SELECTOR = "api_signature_selector"
-
-
 class TestCase(BaseModel):
     name: str
     prompt: str
-    type: TestCaseType
     expected_response: Optional[str]
     expected_plugin_used: Optional[str]
     expected_api_used: Optional[str]
@@ -41,6 +63,7 @@ class Config(BaseModel):
     openplugin_api_key: Optional[str]
     use_openplugin_library: bool = True
     openai_api_key: Optional[str]
+    auto_translate_to_languages: List[str] = []
     tool_selector_endpoint: Optional[str]
 
 
@@ -50,22 +73,20 @@ class JobRequest(YamlModel):
     config: Config
     test_plugin: Plugin
     plugin_groups: List[PluginGroup]
-    permutations: List[Permutation]
+    plugin_selector_permutations: List[PluginSelectorPermutation]
+    operation_selector_permutations: List[OperationSelectorPermutation]
     test_cases: List[TestCase]
+
+    def get_total_permutations(self):
+        return len(self.plugin_selector_permutations) + len(
+            self.operation_selector_permutations
+        )
 
     def get_plugin_group_from_name(
         self, plugin_group_name: str
     ) -> Optional[PluginGroup]:
         for plugin_group in self.plugin_groups:
             if plugin_group.name == plugin_group_name:
-                return plugin_group
-        return None
-
-    def get_plugin_group_from_permutation(
-        self, permutation: Permutation
-    ) -> Optional[PluginGroup]:
-        for plugin_group in self.plugin_groups:
-            if plugin_group.name == permutation.tool_selector.get("plugin_group_name"):
                 return plugin_group
         return None
 

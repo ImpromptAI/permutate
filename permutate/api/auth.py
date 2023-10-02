@@ -29,7 +29,8 @@ async def get_api_key(api_key_header: str = Security(api_key_header)) -> Any:
     if api_key_header in keys:
         return api_key_header
     else:
-        # Raise an HTTPException with a 403 Forbidden status code if the API key is not valid
+        # Raise an HTTPException with a 403 Forbidden status code if the API key is not
+        # valid
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN, detail="Could not validate API KEY"
         )

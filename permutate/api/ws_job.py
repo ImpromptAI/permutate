@@ -19,7 +19,7 @@ router = APIRouter(
 def start_batch_job(request_json: dict, websocket: WebSocket) -> Any:
     # Create a JobRequest object from the provided JSON data
     job_request = JobRequest(**request_json)
-    runner = Runner()
+    runner = Runner(show_progress_bar=False)
     # Start the batch job and get the response
     runner.start_request(
         job_request,
@@ -38,8 +38,8 @@ def start_batch_job(request_json: dict, websocket: WebSocket) -> Any:
 
 # Define a WebSocket route for starting batch jobs
 @router.websocket("/ws/start-batch-job")
-async def start_batch_job_ws(websocket: WebSocket) -> Any:
-    print(f"CONNECTED TO WEBSOCKET: {websocket}")
+async def start_batch_job_ws(websocket: WebSocket):
+    # logger.info(f"CONNECTED TO WEBSOCKET: {websocket}")
     # Accept the WebSocket connection
     await websocket.accept()
     # Check if the WebSocket is authenticated
@@ -49,7 +49,6 @@ async def start_batch_job_ws(websocket: WebSocket) -> Any:
                 # Receive and parse JSON data from the WebSocket
                 request = await websocket.receive_text()
                 request_json = json.loads(request)
-                print(f"REQUEST: {request_json}")
                 # Start the batch job in a separate thread
                 threading.Thread(
                     target=start_batch_job, args=(request_json, websocket)

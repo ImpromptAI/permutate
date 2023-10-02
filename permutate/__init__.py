@@ -6,7 +6,6 @@ from permutate.job_request_schema import (
     Plugin,
     PluginGroup,
     TestCase,
-    TestCaseType,
 )
 from permutate.job_response_schema import JobResponse
 from permutate.runner import Runner
@@ -21,5 +20,4 @@ __all__ = (
     "TestCase",
     "Config",
     "GenerateTestCase",
-    "TestCaseType",
 )

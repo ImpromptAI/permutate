@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "permutate"
-version = "0.0.10"
+version = "0.0.11"
 description = "Testing framework for LLM Plugins"
 authors = ["shrikant <shrikant.pm14@gmail.com>"]
 readme = "README.md"
@@ -15,9 +15,10 @@ pyyaml = "^6.0"
 typer = { extras = ["all"], version = "^0.9.0" }
 jinja2 = "^3.1.2"
 fastapi = "^0.95.2"
-openplugin = "0.0.21"
-websockets = "11.0.1"
+openplugin = "0.0.23"
+websockets = "^11.0.3"
 boto3 = "^1.28.43"
+colorlog = "^6.7.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -78,4 +79,5 @@ ruff = "ruff"
 pytest.cmd = "py.test --durations=5 -W error::RuntimeWarning --cov --cov-config=.coveragerc --cov-report xml --cov-report term-missing:skip-covered"
 mypy = "mypy . --pretty --show-error-codes"
 fix = { shell = "poe black . && poe ruff --fix ." }
+black-formatter = { shell = "poe black --preview . " }
 test = { shell = "poe black . --check --diff && poe ruff . && poe pytest && poe mypy" }

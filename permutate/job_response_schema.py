@@ -8,7 +8,11 @@ from typing import Dict, List, Optional
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
-from .job_request_schema import Permutation, Plugin
+from permutate.job_request_schema import (
+    OperationSelectorPermutation,
+    Plugin,
+    PluginSelectorPermutation,
+)
 
 
 class JobDetail(BaseModel):
@@ -117,7 +121,8 @@ class JobResponse(BaseModel):
     started_on: datetime
     completed_on: datetime
     test_plugin: Plugin
-    permutations: List[Permutation]
+    plugin_selector_permutations: List[PluginSelectorPermutation]
+    operation_selector_permutations: List[OperationSelectorPermutation]
     summary: JobSummary
     details: List[JobDetail]
     output_directory: Optional[str]
@@ -170,8 +175,10 @@ class JobResponse(BaseModel):
             for permutation in self.permutations:
                 environment_name = permutation.name
                 fieldnames = list(JobSummary.schema()["properties"].keys())
-                summary_filename = f"{self.output_directory}{self.job_name}\
-                    {environment_name}_summary.csv"
+                summary_filename = (
+                    f"{self.output_directory}{self.job_name}                   "
+                    f" {environment_name}_summary.csv"
+                )
                 with open(summary_filename, "w") as fp:
                     writer = csv.DictWriter(fp, fieldnames=fieldnames)
                     writer.writeheader()
@@ -180,8 +187,10 @@ class JobResponse(BaseModel):
                     )
 
                 fieldnames = list(JobDetail.schema()["properties"].keys())
-                detail_filename = f"{self.output_directory}{self.job_name}\
-                    {environment_name}_details.csv"
+                detail_filename = (
+                    f"{self.output_directory}{self.job_name}                   "
+                    f" {environment_name}_details.csv"
+                )
                 with open(detail_filename, "w") as fp:
                     writer = csv.DictWriter(fp, fieldnames=fieldnames)
                     writer.writeheader()
@@ -220,9 +229,9 @@ class JobResponse(BaseModel):
                 row = [
                     {
                         "data": tool_case_result,
-                        "class_name": "fail"
-                        if tool_case_result == "Failed"
-                        else "pass",
+                        "class_name": (
+                            "fail" if tool_case_result == "Failed" else "pass"
+                        ),
                     },
                     {"data": test_types.get(test_case_name)},
                     {"data": permutation.tool_selector.get("provider")},

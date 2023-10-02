@@ -14,11 +14,17 @@ def generate_variations(openai_api_key: str, human_usage_example: str) -> List[s
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant who generates human usage examples.",
+                    "content": (
+                        "You are a helpful assistant who generates human usage"
+                        " examples."
+                    ),
                 },
                 {
                     "role": "user",
-                    "content": f"Generate 5 sample variations of this usage example: {human_usage_example}",
+                    "content": (
+                        "Generate 5 sample variations of this usage example:"
+                        f" {human_usage_example}"
+                    ),
                 },
             ],
         }

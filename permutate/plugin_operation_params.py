@@ -55,5 +55,5 @@ def get_plugin_operation_params(url: str):
                     f"{operation}_{method}", []
                 )
         return result_map
-    except Exception as e:
+    except Exception:
         traceback.print_exc()

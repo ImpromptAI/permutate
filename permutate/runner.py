@@ -142,9 +142,7 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(
-            break_down_by_environment=False
-        ) if save_to_csv else None
+        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -224,9 +222,7 @@ class Runner:
                         }
                     )
                 elif permutation.get_permutation_type() == "operation_selector":
-                    url = (
-                        f"{config.tool_selector_endpoint}/api/api-signature-selector"
-                    )
+                    url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
                     payload = json.dumps(
                         {
                             "messages": [
@@ -249,9 +245,7 @@ class Runner:
                     "x-api-key": config.openplugin_api_key,
                     "Content-Type": "application/json",
                 }
-                response = requests.request(
-                    "POST", url, headers=headers, data=payload
-                )
+                response = requests.request("POST", url, headers=headers, data=payload)
                 if response.status_code == 401 or response.status_code == 403:
                     raise Exception("Invalid Openplugin API key")
                 if response.status_code != 200:

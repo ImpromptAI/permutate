@@ -90,9 +90,7 @@ class JobSummary(BaseModel):
             total_llm_tokens_used += (
                 detail.total_llm_tokens_used if detail.total_llm_tokens_used else 0
             )
-            total_llm_api_cost += (
-                int(detail.llm_api_cost) if detail.llm_api_cost else 0
-            )
+            total_llm_api_cost += int(detail.llm_api_cost) if detail.llm_api_cost else 0
 
             passed_step_a += 1 if detail.is_plugin_detected else 0
             passed_step_b += 1 if detail.is_plugin_operation_found else 0
@@ -165,9 +163,7 @@ class JobResponse(BaseModel):
             with open(summary_filename, "w") as fp:
                 writer = csv.DictWriter(fp, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerow(
-                    json.loads(JobSummaryOut(**self.summary.dict()).json())
-                )
+                writer.writerow(json.loads(JobSummaryOut(**self.summary.dict()).json()))
 
             fieldnames = list(JobDetail.schema()["properties"].keys())
             detail_filename = f"{self.output_directory}{self.job_name}-details.csv"
@@ -181,8 +177,7 @@ class JobResponse(BaseModel):
             print(f"Details csv result\n\t{detail_filename}")
         else:
             for permutation in (
-                self.plugin_selector_permutations
-                + self.operation_selector_permutations
+                self.plugin_selector_permutations + self.operation_selector_permutations
             ):
                 environment_name = permutation.name
                 fieldnames = list(JobSummary.schema()["properties"].keys())

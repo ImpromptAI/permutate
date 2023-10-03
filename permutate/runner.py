@@ -193,9 +193,7 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(
-            break_down_by_environment=False
-        ) if save_to_csv else None
+        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -276,9 +274,7 @@ class Runner:
                         }
                     )
                 elif permutation.get_permutation_type() == "operation_selector":
-                    url = (
-                        f"{config.tool_selector_endpoint}/api/api-signature-selector"
-                    )
+                    url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
                     payload_str = json.dumps(
                         {
                             "messages": [

@@ -82,12 +82,12 @@ class Runner:
             100 / (request.get_total_permutations() * len(request.test_cases))
         )
 
-        # batch_job_started_on = datetime.now()
+        batch_job_started_on = datetime.now()
 
         all_details = []
         send_socket_msg(
             websocket=websocket,
-            json_msg={"status": "batch job started"},
+            json_msg={"status": "batch_job_started"},
         )
 
         for operation in request.operations:
@@ -101,7 +101,7 @@ class Runner:
                 send_socket_msg(
                     websocket=websocket,
                     json_msg={
-                        "status": "test case started",
+                        "status": "test_case_started",
                         "test_case_id": test_case.id,
                     },
                 )
@@ -122,10 +122,13 @@ class Runner:
                             send_socket_msg(
                                 websocket=websocket,
                                 json_msg={
-                                    "status": "permutation started",
+                                    "status": "permutation_started",
                                     "test_case_id": test_case.id,
                                     "permutation_index": permutation_index,
                                     "permutation_summary": permutation_summary,
+                                    "llm": llm,
+                                    "pipeline_name": permutation.tool_selector.pipeline_name,
+                                    "plugin_group": p_group.name,
                                 },
                             )
 
@@ -141,11 +144,13 @@ class Runner:
                             send_socket_msg(
                                 websocket=websocket,
                                 json_msg={
-                                    "status": "permutation ended",
+                                    "status": "permutation_ended",
                                     "test_case_id": test_case.id,
                                     "permutation_index": permutation_index,
                                     "permutation_summary": permutation_summary,
-                                    "details": detail.dict(),
+                                    "llm": llm,
+                                    "pipeline_name": permutation.tool_selector.pipeline_name,
+                                    "plugin_group": p_group.name,
                                 },
                             )
                             permutation_index += 1
@@ -160,7 +165,7 @@ class Runner:
                 send_socket_msg(
                     websocket=websocket,
                     json_msg={
-                        "status": "test case ended",
+                        "status": "test_case_ended",
                         "test_case_id": test_case.id,
                     },
                 )
@@ -169,9 +174,9 @@ class Runner:
                 break
         send_socket_msg(
             websocket=websocket,
-            json_msg={"status": "batch job ended"},
+            json_msg={"status": "batch_job_ended"},
         )
-        """
+
         summary = JobSummary.build_from_details(all_details)
         response = JobResponse(
             job_name=request.get_job_request_name(),
@@ -194,8 +199,6 @@ class Runner:
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
-        """
-        return None
 
     @staticmethod
     def run_single_permutation_test_case(

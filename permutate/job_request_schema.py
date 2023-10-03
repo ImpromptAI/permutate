@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 from pydantic_yaml import YamlModel
@@ -8,7 +8,7 @@ from pydantic_yaml import YamlModel
 
 class ToolSelector(BaseModel):
     pipeline_name: str
-    llms: List[Dict[str, str]] = []
+    llms: List[Dict[str, Any]] = []
 
 
 class Permutation(BaseModel):

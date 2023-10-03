@@ -1,4 +1,5 @@
 import traceback
+from typing import Any, Dict
 
 import requests
 
@@ -46,7 +47,7 @@ def get_plugin_operation_params(url: str):
                                 props[key]["in"] = "body"
                                 params.append(props[key])
                         param_map[f"{path}_{method}"] = params
-        result_map = {}
+        result_map: Dict[Any, Any] = {}
 
         for operation in openplugin_manifest_json["plugin_operations"]:
             result_map[operation] = {}

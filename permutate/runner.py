@@ -4,7 +4,7 @@ import os
 import traceback
 import webbrowser
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import boto3
 import requests
@@ -162,13 +162,13 @@ class Runner:
         try:
             # Run a single test case for a permutation
             passed = True
-            all_plugins = plugin_group.dict().get("plugins")
+            all_plugins = plugin_group.dict().get("plugins", [])
             all_plugins.append(test_plugin.dict())
             # Determine the type of test case
             # (Plugin Selector or API Signature Selector)
             if config.tool_selector_endpoint is None:
                 if permutation.get_permutation_type() == "plugin_selector":
-                    payload = {
+                    lib_payload = {
                         "messages": [
                             {
                                 "content": test_case.prompt,
@@ -182,9 +182,9 @@ class Runner:
                         },
                         "llm": llm,
                     }
-                    response_json = run_plugin_selector(payload)
+                    response_json = run_plugin_selector(lib_payload)
                 elif permutation.get_permutation_type() == "operation_selector":
-                    payload = {
+                    lib_payload = {
                         "messages": [
                             {
                                 "content": test_case.prompt,
@@ -198,14 +198,13 @@ class Runner:
                         },
                         "llm": llm,
                     }
-                    response_json = run_api_signature_selector(payload)
+                    response_json = run_api_signature_selector(lib_payload)
                 else:
                     raise Exception("Incorrect test case type")
             else:
                 if permutation.get_permutation_type() == "plugin_selector":
                     url = f"{config.tool_selector_endpoint}/api/plugin-selector"
-                    # TODO: change this
-                    payload = json.dumps(
+                    payload_str: str = json.dumps(
                         {
                             "messages": [
                                 {
@@ -223,7 +222,7 @@ class Runner:
                     )
                 elif permutation.get_permutation_type() == "operation_selector":
                     url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
-                    payload = json.dumps(
+                    payload_str = json.dumps(
                         {
                             "messages": [
                                 {
@@ -241,11 +240,14 @@ class Runner:
                     )
                 else:
                     raise Exception("Incorrect test case type")
-                headers = {
+
+                headers: Dict[Any, Any] = {
                     "x-api-key": config.openplugin_api_key,
                     "Content-Type": "application/json",
                 }
-                response = requests.request("POST", url, headers=headers, data=payload)
+                response = requests.request(
+                    "POST", url, headers=headers, data=payload_str
+                )
                 if response.status_code == 401 or response.status_code == 403:
                     raise Exception("Invalid Openplugin API key")
                 if response.status_code != 200:
@@ -261,7 +263,10 @@ class Runner:
                     language="English",
                     prompt=test_case.prompt,
                     final_output="FAILED",
-                    match_score="0.0",
+                    match_score=0,
+                    plugin_name=None,
+                    plugin_operation=None,
+                    plugin_parameters_mapped=None,
                     is_plugin_detected=False,
                     is_plugin_operation_found=False,
                     is_plugin_parameter_mapped=False,
@@ -273,7 +278,7 @@ class Runner:
             is_plugin_detected = False
             is_plugin_operation_found = False
             is_plugin_parameter_mapped = False
-            parameter_mapped_percentage = 0
+            parameter_mapped_percentage = 0.0
             plugin_operation = None
             plugin_name = None
             plugin_parameters_mapped = None
@@ -301,20 +306,28 @@ class Runner:
                         and plugin_parameters_mapped
                     ):
                         expected_params = test_case.expected_parameters
-                        common_pairs = {
-                            k: plugin_parameters_mapped[k]
-                            for k in plugin_parameters_mapped
-                            if k in expected_params
-                            and str(plugin_parameters_mapped[k])
-                            == str(expected_params[k])
-                        }
-                        if len(common_pairs) == len(expected_params):
+                        if expected_params:
+                            common_pairs = {
+                                k: v
+                                for k, v in plugin_parameters_mapped.items()
+                                if k in expected_params
+                                and str(v) == str(expected_params[k])
+                            }
+                        if (
+                            len(common_pairs) == len(expected_params)
+                            if expected_params
+                            else 0
+                        ):
                             parameter_mapped_percentage = 100
                             is_plugin_parameter_mapped = True
                         else:
                             parameter_mapped_percentage = (
-                                len(common_pairs) / len(expected_params) * 100
-                            )
+                                len(common_pairs)
+                                if common_pairs
+                                else 0 / len(expected_params)
+                                if expected_params
+                                else 0
+                            ) * 100
             detail = JobDetail(
                 permutation_name=permutation.name,
                 permutation_summary=permutation_summary,
@@ -324,7 +337,7 @@ class Runner:
                 language="English",
                 prompt=test_case.prompt,
                 final_output=response_json.get("final_text_response"),
-                match_score="0.0",
+                match_score=0,
                 is_plugin_detected=is_plugin_detected,
                 is_plugin_operation_found=is_plugin_operation_found,
                 is_plugin_parameter_mapped=is_plugin_parameter_mapped,
@@ -348,7 +361,10 @@ class Runner:
                 language="English",
                 prompt=test_case.prompt,
                 final_output="FAILED",
-                match_score="0.0",
+                match_score=0,
+                plugin_name=None,
+                plugin_operation=None,
+                plugin_parameters_mapped=None,
                 is_plugin_detected=False,
                 is_plugin_operation_found=False,
                 is_plugin_parameter_mapped=False,

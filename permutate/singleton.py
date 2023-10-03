@@ -1,4 +1,5 @@
 import abc
+from typing import Any, Dict
 
 
 class Singleton(abc.ABCMeta, type):
@@ -6,7 +7,8 @@ class Singleton(abc.ABCMeta, type):
     Singleton metaclass for ensuring only one instance of a class.
     """
 
-    _instances = {}
+    # hack for now
+    _instances: Dict[Any, Any] = {}
 
     def __call__(cls, *args, **kwargs):
         """Call method for the singleton metaclass."""

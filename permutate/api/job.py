@@ -9,9 +9,10 @@ from fastapi.security.api_key import APIKey
 from permutate import (
     Config,
     JobRequest,
-    Permutation,
+    OperationSelectorPermutation,
     Plugin,
     PluginGroup,
+    PluginSelectorPermutation,
     Runner,
     TestCase,
 )
@@ -71,10 +72,11 @@ def start_job_interactive(  # noqa: F811
     config: Config,
     plugin: Plugin,
     plugin_group: PluginGroup,
-    permutation: Permutation,
+    plugin_selector_permutation: PluginSelectorPermutation,
+    operation_selector_permutation: OperationSelectorPermutation,
     test_case: TestCase,
     api_key: APIKey = Depends(auth.get_api_key),
-) -> Any:
+):
     try:
         # Create a JobRequest object using the provided parameters
         job_request = JobRequest(
@@ -83,7 +85,12 @@ def start_job_interactive(  # noqa: F811
             config=config,
             test_plugin=plugin,
             plugin_groups=[plugin_group],
-            permutations=[permutation],
+            plugin_selector_permutations=[]
+            if plugin_selector_permutation is None
+            else [plugin_selector_permutation],
+            operation_selector_permutations=[]
+            if operation_selector_permutation is None
+            else [operation_selector_permutation],
             test_cases=[test_case],
         )
         # Create a Runner instance

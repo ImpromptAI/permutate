@@ -1,13 +1,20 @@
 import os
 from itertools import combinations
-from typing import Optional
+from typing import List, Optional
 
 import boto3
 import requests
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from permutate import Config, JobRequest, Permutation, Plugin, TestCase
+from permutate import (
+    Config,
+    JobRequest,
+    Plugin,
+    PluginSelectorPermutation,
+    TestCase,
+    ToolSelector,
+)
 from permutate.generate_test_cases import generate_variations
 
 load_dotenv()
@@ -70,7 +77,7 @@ class GeneratePermutations(BaseModel):
         ):
             server_endpoint = opeapi_doc_json.get("servers")[0].get("url")
         plugin_groups = self.gen_plugin_groups()
-        permutations = self.gen_permutations(plugin_groups)
+        plugin_permutations = self.gen_plugin_selector_permutations(plugin_groups)
         test_cases = self.gen_test_variations(openplugin_manifest_json, server_endpoint)
         name = (
             f'{openplugin_manifest_json.get("name", "").replace(" ", "_")}'
@@ -79,10 +86,17 @@ class GeneratePermutations(BaseModel):
         response = JobRequest(
             version="1.1.0",
             name=name,
-            config=Config(),
+            config=Config(
+                openplugin_api_key=None,
+                use_openplugin_library=True,
+                openai_api_key=None,
+                auto_translate_to_languages=[],
+                tool_selector_endpoint=None,
+            ),
             test_plugin=Plugin(manifest_url=self.request.openplugin_manifest_url),
             plugin_groups=plugin_groups,
-            permutations=permutations,
+            plugin_selector_permutations=plugin_permutations,
+            operation_selector_permutations=[],
             test_cases=test_cases,
         )
         return response
@@ -103,7 +117,7 @@ class GeneratePermutations(BaseModel):
                 index += 1
         return all_combinations
 
-    def gen_test_variations(self, openplugin_manifest_json, server_endpoint) -> list:
+    def gen_test_variations(self, openplugin_manifest_json, server_endpoint):
         test_cases = []
         plugin_operations = openplugin_manifest_json.get("plugin_operations", {})
         for path in plugin_operations.keys():
@@ -147,97 +161,43 @@ class GeneratePermutations(BaseModel):
 
             return test_cases
 
-    def gen_permutations(self, plugin_groups) -> list:
-        permutations = []
-        for pg in plugin_groups:
-            permutations.append(
-                Permutation(
-                    name="permutation 1",
-                    llm={
-                        "provider": "OpenAIChat",
-                        "model_name": "gpt-3.5-turbo",
-                        "supported_max_tokens": 4096,
-                        "temperature": 0,
-                        "max_tokens": 1024,
-                        "top_p": 1,
-                        "frequency_penalty": 0,
-                        "presence_penalty": 0,
-                        "n": 1,
-                        "best_of": 1,
-                    },
-                    tool_selector={
-                        "provider": "OpenAI",
-                        "pipeline_name": "default",
-                        "plugin_group_name": pg.get("name"),
-                    },
-                )
+    def gen_plugin_selector_permutations(
+        self, plugin_groups
+    ) -> List[PluginSelectorPermutation]:
+        permutations = [
+            PluginSelectorPermutation(
+                name="permutation 1",
+                tool_selector=ToolSelector(
+                    pipeline_name="OAI Functions",
+                    llms=[
+                        {
+                            "provider": "OpenAIChat",
+                            "model_name": "gpt-3.5-turbo",
+                            "supported_max_tokens": 4096,
+                            "temperature": 0,
+                            "max_tokens": 1024,
+                            "top_p": 1,
+                            "frequency_penalty": 0,
+                            "presence_penalty": 0,
+                            "n": 1,
+                            "best_of": 1,
+                        },
+                        {
+                            "provider": "OpenAIChat",
+                            "model_name": "gpt-4",
+                            "supported_max_tokens": 4096,
+                            "temperature": 0,
+                            "max_tokens": 2048,
+                            "top_p": 1,
+                            "frequency_penalty": 0,
+                            "presence_penalty": 0,
+                            "n": 1,
+                            "best_of": 1,
+                        },
+                    ],
+                ),
             )
-            permutations.append(
-                Permutation(
-                    name="permutation 2",
-                    llm={
-                        "provider": "OpenAIChat",
-                        "model_name": "gpt-4",
-                        "supported_max_tokens": 4096,
-                        "temperature": 0,
-                        "max_tokens": 2048,
-                        "top_p": 1,
-                        "frequency_penalty": 0,
-                        "presence_penalty": 0,
-                        "n": 1,
-                        "best_of": 1,
-                    },
-                    tool_selector={
-                        "provider": "OpenAI",
-                        "pipeline_name": "default",
-                        "plugin_group_name": pg.get("name"),
-                    },
-                )
-            )
-            permutations.append(
-                Permutation(
-                    name="permutation 3",
-                    llm={
-                        "provider": "OpenAIChat",
-                        "model_name": "gpt-3.5-turbo",
-                        "supported_max_tokens": 4096,
-                        "temperature": 0.5,
-                        "max_tokens": 1024,
-                        "top_p": 1,
-                        "frequency_penalty": 0,
-                        "presence_penalty": 0,
-                        "n": 1,
-                        "best_of": 1,
-                    },
-                    tool_selector={
-                        "provider": "OpenAI",
-                        "pipeline_name": "default",
-                        "plugin_group_name": pg.get("name"),
-                    },
-                )
-            )
-            permutations.append(
-                Permutation(
-                    name="permutation 4",
-                    llm={
-                        "provider": "OpenAIChat",
-                        "model_name": "gpt-4",
-                        "supported_max_tokens": 4096,
-                        "temperature": 0.5,
-                        "max_tokens": 2048,
-                        "top_p": 1,
-                        "frequency_penalty": 0,
-                        "presence_penalty": 0,
-                        "n": 1,
-                        "best_of": 1,
-                    },
-                    tool_selector={
-                        "provider": "OpenAI",
-                        "pipeline_name": "default",
-                        "plugin_group_name": pg.get("name"),
-                    },
-                )
-            )
+        ]
         return permutations
 
 

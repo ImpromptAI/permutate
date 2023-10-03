@@ -128,7 +128,9 @@ class JobResponse(BaseModel):
     output_directory: Optional[str]
 
     def get_permutation_by_name(self, name: str):
-        for permutation in self.permutations:
+        for permutation in (
+            self.plugin_selector_permutations + self.operation_selector_permutations
+        ):
             if permutation.name == name:
                 return permutation
 
@@ -172,7 +174,9 @@ class JobResponse(BaseModel):
             print(f"Summary csv result\n\t{summary_filename}")
             print(f"Details csv result\n\t{detail_filename}")
         else:
-            for permutation in self.permutations:
+            for permutation in (
+                self.plugin_selector_permutations + self.operation_selector_permutations
+            ):
                 environment_name = permutation.name
                 fieldnames = list(JobSummary.schema()["properties"].keys())
                 summary_filename = (

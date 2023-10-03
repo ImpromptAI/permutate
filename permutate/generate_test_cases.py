@@ -5,7 +5,9 @@ import requests
 from pydantic import BaseModel
 
 
-def generate_variations(openai_api_key: str, human_usage_example: str) -> List[str]:
+def generate_variations(
+    openai_api_key: Optional[str], human_usage_example: str
+) -> List[str]:
     url = "https://api.openai.com/v1/chat/completions"
     # Prepare the request payload for generating variations
     payload = json.dumps(

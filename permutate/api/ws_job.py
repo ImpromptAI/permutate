@@ -15,10 +15,25 @@ router = APIRouter(
 )
 
 
+def close(websocket: WebSocket):
+    try:
+        # Try to close the WebSocket connection
+        asyncio.run(websocket.close())
+    except Exception as e:
+        print(e)
+        pass
+
+
 # Define a function to start a batch job
 def start_batch_job(request_json: dict, websocket: WebSocket) -> Any:
     # Create a JobRequest object from the provided JSON data
     job_request = JobRequest(**request_json)
+    if len(job_request.test_cases) == 0:
+        asyncio.run(
+            websocket.send_text(json.dumps({"error": "No test cases provided"}))
+        )
+        close(websocket)
+        raise Exception("No test cases provided")
     runner = Runner(show_progress_bar=False)
     # Start the batch job and get the response
     runner.start_request(
@@ -28,16 +43,11 @@ def start_batch_job(request_json: dict, websocket: WebSocket) -> Any:
         save_to_csv=False,
         websocket=websocket,
     )
-    try:
-        # Try to close the WebSocket connection
-        asyncio.run(websocket.close())
-    except Exception as e:
-        print(e)
-        pass
+    close(websocket)
 
 
 # Define a WebSocket route for starting batch jobs
-@router.websocket("/ws/start-batch-job")
+@router.websocket("/ws/start-interactive-job")
 async def start_batch_job_ws(websocket: WebSocket):
     # logger.info(f"CONNECTED TO WEBSOCKET: {websocket}")
     # Accept the WebSocket connection

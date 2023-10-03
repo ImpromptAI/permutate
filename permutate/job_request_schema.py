@@ -2,13 +2,23 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 from pydantic_yaml import YamlModel
 
 
 class ToolSelector(BaseModel):
     pipeline_name: str
     llms: List[Dict[str, Any]] = []
+
+    @root_validator(pre=True)
+    def parse_a_obj(cls, values):
+        llms = values.get("llms", [])
+        for llm in llms:
+            if llm.get("model") and not llm.get("model_name"):
+                llm["model_name"] = llm["model"].lower()
+            if llm.get("provider") and llm.get("provider") == "OpenAI":
+                llm["provider"] = "OpenAIChat"
+        return values
 
 
 class Permutation(BaseModel):
@@ -50,13 +60,14 @@ class PluginGroup(BaseModel):
 
 
 class TestCase(BaseModel):
-    name: str
+    id: str
+    name: Optional[str]
     prompt: str
     expected_response: Optional[str]
     expected_plugin_used: Optional[str]
     expected_api_used: Optional[str]
     expected_method: Optional[str]
-    expected_parameters: Optional[Dict[str, str]]
+    expected_parameters: Optional[Dict[str, Any]]
 
 
 class Config(BaseModel):
@@ -76,6 +87,7 @@ class JobRequest(YamlModel):
     plugin_selector_permutations: List[PluginSelectorPermutation]
     operation_selector_permutations: List[OperationSelectorPermutation]
     test_cases: List[TestCase]
+    operations: List[str] = []
 
     def get_total_permutations(self):
         return len(self.plugin_selector_permutations) + len(

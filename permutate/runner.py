@@ -4,7 +4,7 @@ import os
 import traceback
 import webbrowser
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import boto3
 import requests
@@ -36,6 +36,12 @@ S3_ACCESS_KEY = os.environ.get("S3_ACCESS_KEY")
 S3_SECRET_KEY = os.environ.get("S3_SECRET_KEY")
 
 
+def send_socket_msg(websocket: Optional[WebSocket], json_msg: dict):
+    logger.info(title="socket message", message=json.dumps(json_msg))
+    if websocket:
+        asyncio.run(websocket.send_text(json.dumps(json_msg)))
+
+
 # Define a Runner class to handle job execution
 class Runner:
     def __init__(self, show_progress_bar: bool = True):
@@ -65,7 +71,7 @@ class Runner:
         save_to_csv: bool = True,
         websocket: Optional[WebSocket] = None,
         save_to_s3: bool = False,
-    ) -> JobResponse:
+    ):
         if request.config.openai_api_key is None:
             raise Exception("OpenAI API key is not set")
         logger.info(
@@ -76,56 +82,96 @@ class Runner:
             100 / (request.get_total_permutations() * len(request.test_cases))
         )
 
-        batch_job_started_on = datetime.now()
+        # batch_job_started_on = datetime.now()
+
         all_details = []
-        for permutation in (
-            request.plugin_selector_permutations
-            + request.operation_selector_permutations
-        ):
-            permutation_details = []
-            for llm in permutation.get_llms():
-                permutation_summary = (
-                    f"{llm.get('provider')}[{llm.get('model_name')}] -"
-                    f" [{permutation.tool_selector.pipeline_name}]"
+        send_socket_msg(
+            websocket=websocket,
+            json_msg={"status": "batch job started"},
+        )
+
+        for operation in request.operations:
+            for test_case in request.test_cases:
+                operation_key = (
+                    f"{test_case.expected_method} {test_case.expected_api_used}"
                 )
-                for test_case in request.test_cases:
-                    if self.show_progress_bar:
-                        self.pbar.update(self.progress_counter)
-                    for p_group in request.plugin_groups:
-                        logger.info(
-                            title="permutation run started",
-                            message=(
-                                f"Running permutation for: "
-                                f"{permutation.permutation_type}, "
-                                f" {permutation_summary},plugin_group="
-                                f" {p_group.name},test_case= {test_case.name}"
-                            ),
-                        )
-                        detail = self.run_single_permutation_test_case(
-                            test_case,
-                            request.test_plugin,
-                            request.config,
-                            permutation,
-                            p_group,
-                            permutation_summary,
-                            llm,
-                        )
-                        logger.info(
-                            title="permutation run ended",
-                            message=f"is_run_completed={detail.is_run_completed}",
-                        )
+                if operation_key != operation:
+                    continue
+                permutation_index = 1
+                send_socket_msg(
+                    websocket=websocket,
+                    json_msg={
+                        "status": "test case started",
+                        "test_case_id": test_case.id,
+                    },
+                )
+                for permutation in (
+                    request.plugin_selector_permutations
+                    + request.operation_selector_permutations
+                ):
+                    permutation_details = []
+                    for llm in permutation.get_llms():
+                        if self.show_progress_bar:
+                            self.pbar.update(self.progress_counter)
+                        for p_group in request.plugin_groups:
+                            permutation_summary = (
+                                f"{llm.get('provider')}[{llm.get('model_name')}] -"
+                                f" [{permutation.tool_selector.pipeline_name}] "
+                                f"-PLUGIN_GROUP={p_group.name}"
+                            )
+                            send_socket_msg(
+                                websocket=websocket,
+                                json_msg={
+                                    "status": "permutation started",
+                                    "test_case_id": test_case.id,
+                                    "permutation_index": permutation_index,
+                                    "permutation_summary": permutation_summary,
+                                },
+                            )
+
+                            detail = self.run_single_permutation_test_case(
+                                test_case,
+                                request.test_plugin,
+                                request.config,
+                                permutation,
+                                p_group,
+                                permutation_summary,
+                                llm,
+                            )
+                            send_socket_msg(
+                                websocket=websocket,
+                                json_msg={
+                                    "status": "permutation ended",
+                                    "test_case_id": test_case.id,
+                                    "permutation_index": permutation_index,
+                                    "permutation_summary": permutation_summary,
+                                    "details": detail.dict(),
+                                },
+                            )
+                            permutation_index += 1
+                            permutation_details.append(detail)
+                            if SINGLE_MODE_ON:
+                                break
                         if SINGLE_MODE_ON:
                             break
-                    if websocket is not None:
-                        asyncio.run(websocket.send_text(detail.json()))
-                    permutation_details.append(detail)
                     if SINGLE_MODE_ON:
                         break
+                    all_details.extend(permutation_details)
+                send_socket_msg(
+                    websocket=websocket,
+                    json_msg={
+                        "status": "test case ended",
+                        "test_case_id": test_case.id,
+                    },
+                )
                 if SINGLE_MODE_ON:
                     break
-            all_details.extend(permutation_details)
-            if SINGLE_MODE_ON:
                 break
+        send_socket_msg(
+            websocket=websocket,
+            json_msg={"status": "batch job ended"},
+        )
+        """
         summary = JobSummary.build_from_details(all_details)
         response = JobResponse(
             job_name=request.get_job_request_name(),
@@ -142,12 +188,14 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
+        response.save_to_csv(
+            break_down_by_environment=False
+        ) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
-
-        return response
+        """
+        return None
 
     @staticmethod
     def run_single_permutation_test_case(
@@ -221,7 +269,9 @@ class Runner:
                         }
                     )
                 elif permutation.get_permutation_type() == "operation_selector":
-                    url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                    url = (
+                        f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                    )
                     payload_str = json.dumps(
                         {
                             "messages": [
@@ -261,6 +311,7 @@ class Runner:
                     test_case_name=test_case.name,
                     is_run_completed=False,
                     language="English",
+                    test_case_id=test_case.id,
                     prompt=test_case.prompt,
                     final_output="FAILED",
                     match_score=0,
@@ -333,6 +384,7 @@ class Runner:
                 permutation_summary=permutation_summary,
                 test_type=permutation.get_permutation_type(),
                 test_case_name=test_case.name,
+                test_case_id=test_case.id,
                 is_run_completed=True,
                 language="English",
                 prompt=test_case.prompt,
@@ -358,6 +410,7 @@ class Runner:
                 test_type=permutation.get_permutation_type(),
                 test_case_name=test_case.name,
                 is_run_completed=False,
+                test_case_id=test_case.id,
                 language="English",
                 prompt=test_case.prompt,
                 final_output="FAILED",

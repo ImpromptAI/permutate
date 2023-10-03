@@ -120,6 +120,7 @@ class JobSummaryOut(JobSummary):
 
 
 class JobResponse(BaseModel):
+    status: Optional[str] = "job_summary"
     job_name: str
     started_on: datetime
     completed_on: datetime

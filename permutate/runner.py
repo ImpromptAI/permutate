@@ -4,7 +4,7 @@ import os
 import traceback
 import webbrowser
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import boto3
 import requests
@@ -127,7 +127,9 @@ class Runner:
                                     "permutation_index": permutation_index,
                                     "permutation_summary": permutation_summary,
                                     "llm": llm,
-                                    "pipeline_name": permutation.tool_selector.pipeline_name,
+                                    "pipeline_name": (
+                                        permutation.tool_selector.pipeline_name
+                                    ),
                                     "plugin_group": p_group.name,
                                 },
                             )
@@ -144,12 +146,14 @@ class Runner:
                             send_socket_msg(
                                 websocket=websocket,
                                 json_msg={
-                                    "status": "permutation_ended",
+                                    "status": "permutation_started",
                                     "test_case_id": test_case.id,
                                     "permutation_index": permutation_index,
                                     "permutation_summary": permutation_summary,
                                     "llm": llm,
-                                    "pipeline_name": permutation.tool_selector.pipeline_name,
+                                    "pipeline_name": (
+                                        permutation.tool_selector.pipeline_name
+                                    ),
                                     "plugin_group": p_group.name,
                                 },
                             )
@@ -172,10 +176,6 @@ class Runner:
                 if SINGLE_MODE_ON:
                     break
                 break
-        send_socket_msg(
-            websocket=websocket,
-            json_msg={"status": "batch_job_ended"},
-        )
 
         summary = JobSummary.build_from_details(all_details)
         response = JobResponse(
@@ -199,6 +199,10 @@ class Runner:
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
+        send_socket_msg(
+            websocket=websocket,
+            json_msg={"status": "batch_job_ended"},
+        )
 
     @staticmethod
     def run_single_permutation_test_case(

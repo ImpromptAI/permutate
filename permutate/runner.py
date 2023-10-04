@@ -90,6 +90,34 @@ class Runner:
             json_msg={"status": "batch_job_started"},
         )
 
+        # Get all permutations
+        test_case_permutations = []
+        p_index = 1
+        for permutation in (
+            request.plugin_selector_permutations
+            + request.operation_selector_permutations
+        ):
+            for llm in permutation.get_llms():
+                for p_group in request.plugin_groups:
+                    permutation_summary = (
+                        f"{llm.get('provider')}[{llm.get('model_name')}] -"
+                        f" [{permutation.tool_selector.pipeline_name}] "
+                        f"-PLUGIN_GROUP={p_group.name}"
+                    )
+                    test_case_permutations.append(
+                        {
+                            "permutation_index": p_index,
+                            "permutation_summary": permutation_summary,
+                            "llm": llm,
+                            "pipeline_name": (
+                                permutation.tool_selector.pipeline_name
+                            ),
+                            "plugin_group": p_group.name,
+                            "permutation_type": (permutation.get_permutation_type()),
+                        }
+                    )
+                    p_index += 1
+
         for operation in request.operations:
             for test_case in request.test_cases:
                 operation_key = (
@@ -103,6 +131,7 @@ class Runner:
                     websocket=websocket,
                     json_msg={
                         "status": "test_case_started",
+                        "permutations": test_case_permutations,
                         "test_case_id": test_case.id,
                     },
                 )
@@ -183,8 +212,6 @@ class Runner:
                 )
                 if SINGLE_MODE_ON:
                     break
-        print("--")
-        print(all_details)
         summary = JobSummary.build_from_details(all_details)
         response = JobResponse(
             job_name=request.get_job_request_name(),
@@ -352,7 +379,7 @@ class Runner:
                 "detected_plugin_operations"
             ):
                 if (
-                    detected_plugin_operation.get("plugin").get("manifest_url")
+                    detected_plugin_operation.get("plugin").get("name")
                     == test_case.expected_plugin_used
                 ):
                     is_plugin_detected = True

@@ -26,6 +26,7 @@ from permutate.job_request_schema import (
 )
 from permutate.job_response_schema import JobDetail, JobResponse, JobSummary
 from permutate.logger import logger
+from permutate.plugin_operation_params import get_plugin_operation_params
 
 # Get the OpenAI API key from the environment variable
 load_dotenv()
@@ -85,10 +86,6 @@ class Runner:
         batch_job_started_on = datetime.now()
 
         all_details = []
-        send_socket_msg(
-            websocket=websocket,
-            json_msg={"status": "batch_job_started"},
-        )
 
         # Get all permutations
         test_case_permutations = []
@@ -118,6 +115,17 @@ class Runner:
                     )
                     p_index += 1
 
+        send_socket_msg(
+            websocket=websocket,
+            json_msg={
+                "status": "batch_job_started",
+                "permutations": test_case_permutations,
+                "plugin_operation_params": get_plugin_operation_params(
+                    request.test_plugin.manifest_url
+                ),
+            },
+        )
+
         for operation in request.operations:
             for test_case in request.test_cases:
                 operation_key = (
@@ -131,7 +139,6 @@ class Runner:
                     websocket=websocket,
                     json_msg={
                         "status": "test_case_started",
-                        "permutations": test_case_permutations,
                         "test_case_id": test_case.id,
                     },
                 )

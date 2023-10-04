@@ -95,8 +95,9 @@ class Runner:
                 operation_key = (
                     f"{test_case.expected_method} {test_case.expected_api_used}"
                 )
-                if operation_key != operation:
+                if operation_key.lower() != operation.lower():
                     continue
+
                 permutation_index = 1
                 send_socket_msg(
                     websocket=websocket,
@@ -123,6 +124,9 @@ class Runner:
                                 websocket=websocket,
                                 json_msg={
                                     "status": "permutation_started",
+                                    "permutation_type": (
+                                        permutation.get_permutation_type()
+                                    ),
                                     "test_case_id": test_case.id,
                                     "permutation_index": permutation_index,
                                     "permutation_summary": permutation_summary,
@@ -146,7 +150,10 @@ class Runner:
                             send_socket_msg(
                                 websocket=websocket,
                                 json_msg={
-                                    "status": "permutation_started",
+                                    "status": "permutation_ended",
+                                    "permutation_type": (
+                                        permutation.get_permutation_type()
+                                    ),
                                     "test_case_id": test_case.id,
                                     "permutation_index": permutation_index,
                                     "permutation_summary": permutation_summary,
@@ -155,6 +162,7 @@ class Runner:
                                         permutation.tool_selector.pipeline_name
                                     ),
                                     "plugin_group": p_group.name,
+                                    "response": detail.dict(),
                                 },
                             )
                             permutation_index += 1
@@ -175,8 +183,8 @@ class Runner:
                 )
                 if SINGLE_MODE_ON:
                     break
-                break
-
+        print("--")
+        print(all_details)
         summary = JobSummary.build_from_details(all_details)
         response = JobResponse(
             job_name=request.get_job_request_name(),
@@ -193,7 +201,9 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
+        response.save_to_csv(
+            break_down_by_environment=False
+        ) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -274,7 +284,9 @@ class Runner:
                         }
                     )
                 elif permutation.get_permutation_type() == "operation_selector":
-                    url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                    url = (
+                        f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                    )
                     payload_str = json.dumps(
                         {
                             "messages": [

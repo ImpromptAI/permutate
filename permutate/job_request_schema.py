@@ -59,7 +59,9 @@ class Plugin(BaseModel):
     def parse_a_obj(cls, values):
         openplugin_manifest_url = values.get("manifest_url")
         openplugin_manifest_json = requests.get(openplugin_manifest_url).json()
-        openapi_json = requests.get(openplugin_manifest_json["openapi_doc_url"]).json()
+        openapi_json = requests.get(
+            openplugin_manifest_json["openapi_doc_url"]
+        ).json()
         if values.get("server_urls") is None:
             values["server_urls"] = []
         for server in openapi_json.get("servers", []):

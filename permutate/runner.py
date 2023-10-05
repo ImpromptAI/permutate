@@ -103,7 +103,9 @@ class Runner:
                             "permutation_index": p_index,
                             "permutation_summary": permutation_summary,
                             "llm": llm,
-                            "pipeline_name": (permutation.tool_selector.pipeline_name),
+                            "pipeline_name": (
+                                permutation.tool_selector.pipeline_name
+                            ),
                             "plugin_group": p_group.name,
                             "permutation_type": (permutation.get_permutation_type()),
                         }
@@ -221,7 +223,9 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
+        response.save_to_csv(
+            break_down_by_environment=False
+        ) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -302,7 +306,9 @@ class Runner:
                         }
                     )
                 elif permutation.get_permutation_type() == "operation_selector":
-                    url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                    url = (
+                        f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                    )
                     payload_str = json.dumps(
                         {
                             "messages": [
@@ -343,6 +349,7 @@ class Runner:
                     is_run_completed=False,
                     language="English",
                     test_case_id=test_case.id,
+                    method=None,
                     prompt=test_case.prompt,
                     final_output="FAILED",
                     match_score=0,
@@ -364,6 +371,7 @@ class Runner:
             plugin_operation = None
             plugin_name = None
             plugin_parameters_mapped = None
+            method = None
             for detected_plugin_operation in response_json.get(
                 "detected_plugin_operations"
             ):
@@ -373,19 +381,22 @@ class Runner:
                 ):
                     is_plugin_detected = True
                     plugin_name = detected_plugin_operation.get("plugin").get("name")
-                    if (
-                        detected_plugin_operation.get("api_called")
-                        == test_case.expected_api_used
-                    ):
+
+                    plugin_operation = detected_plugin_operation.get("api_called")
+                    if plugin_operation == test_case.expected_api_used:
                         is_plugin_operation_found = True
+
                     for server_url in test_plugin.server_urls:
                         if (
-                            detected_plugin_operation.get("api_called")
+                            plugin_operation
                             == f"{server_url}{test_case.expected_api_used}"
                         ):
                             is_plugin_operation_found = True
+                            plugin_operation = plugin_operation.replace(
+                                server_url, ""
+                            )
                             break
-                    plugin_operation = detected_plugin_operation.get("api_called")
+                    method = detected_plugin_operation.get("method")
                     plugin_parameters_mapped = detected_plugin_operation.get(
                         "mapped_operation_parameters"
                     )
@@ -433,6 +444,7 @@ class Runner:
                 parameter_mapped_percentage=parameter_mapped_percentage,
                 plugin_name=plugin_name,
                 plugin_operation=plugin_operation,
+                method=method,
                 plugin_parameters_mapped=plugin_parameters_mapped,
                 response_time_sec=response_json.get("response_time"),
                 total_llm_tokens_used=response_json.get("tokens_used"),
@@ -451,6 +463,7 @@ class Runner:
                 language="English",
                 prompt=test_case.prompt,
                 final_output="FAILED",
+                method=None,
                 match_score=0,
                 plugin_name=None,
                 plugin_operation=None,

@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from permutate.singleton import Singleton
 
 load_dotenv()
+
 ENVIRONMENT = os.environ.get("ENVIRONMENT")
 
 

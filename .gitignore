@@ -18,6 +18,7 @@ node_modules/
 _build/*
 # C extensions
 *.so
+push_to_ecs.sh
 
 user_pass_keys.env
 # Distribution / packaging

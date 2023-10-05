@@ -90,10 +90,7 @@ class Runner:
         # Get all permutations
         test_case_permutations = []
         p_index = 1
-        for permutation in (
-            request.plugin_selector_permutations
-            + request.operation_selector_permutations
-        ):
+        for permutation in request.operation_selector_permutations:
             for llm in permutation.get_llms():
                 for p_group in request.plugin_groups:
                     permutation_summary = (
@@ -106,9 +103,7 @@ class Runner:
                             "permutation_index": p_index,
                             "permutation_summary": permutation_summary,
                             "llm": llm,
-                            "pipeline_name": (
-                                permutation.tool_selector.pipeline_name
-                            ),
+                            "pipeline_name": (permutation.tool_selector.pipeline_name),
                             "plugin_group": p_group.name,
                             "permutation_type": (permutation.get_permutation_type()),
                         }
@@ -142,10 +137,7 @@ class Runner:
                         "test_case_id": test_case.id,
                     },
                 )
-                for permutation in (
-                    request.plugin_selector_permutations
-                    + request.operation_selector_permutations
-                ):
+                for permutation in request.operation_selector_permutations:
                     permutation_details = []
                     for llm in permutation.get_llms():
                         if self.show_progress_bar:
@@ -160,9 +152,6 @@ class Runner:
                                 websocket=websocket,
                                 json_msg={
                                     "status": "permutation_started",
-                                    "permutation_type": (
-                                        permutation.get_permutation_type()
-                                    ),
                                     "test_case_id": test_case.id,
                                     "permutation_index": permutation_index,
                                     "permutation_summary": permutation_summary,
@@ -187,9 +176,6 @@ class Runner:
                                 websocket=websocket,
                                 json_msg={
                                     "status": "permutation_ended",
-                                    "permutation_type": (
-                                        permutation.get_permutation_type()
-                                    ),
                                     "test_case_id": test_case.id,
                                     "permutation_index": permutation_index,
                                     "permutation_summary": permutation_summary,
@@ -235,9 +221,7 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(
-            break_down_by_environment=False
-        ) if save_to_csv else None
+        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -318,9 +302,7 @@ class Runner:
                         }
                     )
                 elif permutation.get_permutation_type() == "operation_selector":
-                    url = (
-                        f"{config.tool_selector_endpoint}/api/api-signature-selector"
-                    )
+                    url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
                     payload_str = json.dumps(
                         {
                             "messages": [
@@ -396,11 +378,17 @@ class Runner:
                         == test_case.expected_api_used
                     ):
                         is_plugin_operation_found = True
+                    for server_url in test_plugin.server_urls:
+                        if (
+                            detected_plugin_operation.get("api_called")
+                            == f"{server_url}{test_case.expected_api_used}"
+                        ):
+                            is_plugin_operation_found = True
+                            break
                     plugin_operation = detected_plugin_operation.get("api_called")
                     plugin_parameters_mapped = detected_plugin_operation.get(
                         "mapped_operation_parameters"
                     )
-
                     if (
                         permutation.get_permutation_type() == "operation_selector"
                         and plugin_parameters_mapped

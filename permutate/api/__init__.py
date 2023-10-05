@@ -6,6 +6,7 @@ from starlette.exceptions import HTTPException
 
 from permutate.api import (
     cases,
+    echo,
     generate_permutations,
     job,
     permutations,
@@ -29,8 +30,8 @@ def create_app() -> FastAPI:
         docs_url=f"{API_PREFIX}/docs",
     )
     # Set the root path for the application in production environment
-    if ENVIRONMENT == "production":
-        app.root_path = "/permutate/"
+    # if ENVIRONMENT == "production":
+    #    app.root_path = "/permutate/"
 
     # Create an APIRouter instance to organize routes
     router = APIRouter()
@@ -40,6 +41,7 @@ def create_app() -> FastAPI:
     router.include_router(cases.router)
     router.include_router(ws_job.router)
     router.include_router(generate_permutations.router)
+    router.include_router(echo.router)
     router.include_router(plugin_operation_params.router)
 
     # Include the main router into the FastAPI app with the specified prefix

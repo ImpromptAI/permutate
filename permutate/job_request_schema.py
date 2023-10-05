@@ -2,6 +2,7 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+import requests
 from pydantic import BaseModel, root_validator
 from pydantic_yaml import YamlModel
 
@@ -52,6 +53,18 @@ class OperationSelectorPermutation(Permutation):
 
 class Plugin(BaseModel):
     manifest_url: str
+    server_urls: List[str] = []
+
+    @root_validator(pre=True)
+    def parse_a_obj(cls, values):
+        openplugin_manifest_url = values.get("manifest_url")
+        openplugin_manifest_json = requests.get(openplugin_manifest_url).json()
+        openapi_json = requests.get(openplugin_manifest_json["openapi_doc_url"]).json()
+        if values.get("server_urls") is None:
+            values["server_urls"] = []
+        for server in openapi_json.get("servers", []):
+            values["server_urls"].append(server["url"])
+        return values
 
 
 class PluginGroup(BaseModel):

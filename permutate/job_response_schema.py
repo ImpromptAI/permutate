@@ -117,6 +117,7 @@ class JobResponse(BaseModel):
     completed_on: datetime
     test_plugin: Plugin
     summary: JobSummary
+    permutation_summary: dict[int, JobSummary]
     details: List[JobDetail]
     output_directory: Optional[str]
 

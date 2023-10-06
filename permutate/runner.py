@@ -146,12 +146,25 @@ class Runner:
                     },
                 )
         summary = JobSummary.build_from_details(all_details)
+
+        # build permutation summary
+        permutation_summary: dict[int, JobSummary] = {}
+        for permutation in request.permutation_config.permutations:
+            perm_details = []
+            for detail in all_details:
+                if detail.permutation_id == permutation.id:
+                    perm_details.append(detail)
+            permutation_summary[permutation.id] = JobSummary.build_from_details(
+                all_details
+            )
+
         response = JobResponse(
             job_name=request.get_job_request_name(),
             started_on=batch_job_started_on,
             completed_on=datetime.now(),
             test_plugin=request.test_plugin,
             summary=summary,
+            permutation_summary=permutation_summary,
             details=all_details,
             output_directory=output_directory,
         )

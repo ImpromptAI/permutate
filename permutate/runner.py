@@ -117,7 +117,7 @@ class Runner:
                             "status": "permutation_started",
                             "test_case_id": test_case.id,
                             "permutation_id": permutation.id,
-                            "permutation_summary": permutation.summary,
+                            "permutation_description": permutation.description,
                             "llm": permutation.llm,
                             "strategy": permutation.strategy,
                         },
@@ -131,7 +131,7 @@ class Runner:
                             "status": "permutation_ended",
                             "test_case_id": test_case.id,
                             "permutation_id": permutation.id,
-                            "permutation_summary": permutation.summary,
+                            "permutation_description": permutation.description,
                             "llm": permutation.llm,
                             "strategy": permutation.strategy,
                             "response": detail.dict(),
@@ -172,7 +172,9 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
+        response.save_to_csv(
+            break_down_by_environment=False
+        ) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -204,7 +206,10 @@ class Runner:
                     "tool_selector_config": {"pipeline_name": permutation.strategy},
                     "llm": permutation.llm,
                 }
+                print("---")
+                print(lib_payload)
                 response_json = run_api_signature_selector(lib_payload)
+                print(response_json)
             else:
                 url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
                 payload_str = json.dumps(
@@ -217,7 +222,9 @@ class Runner:
                         ],
                         "plugin": {"manifest_url": test_plugin.manifest_url},
                         "config": config.dict(),
-                        "tool_selector_config": {"pipeline_name": permutation.strategy},
+                        "tool_selector_config": {
+                            "pipeline_name": permutation.strategy
+                        },
                         "llm": permutation.llm,
                     }
                 )
@@ -237,7 +244,7 @@ class Runner:
             if not passed or response_json is None:
                 return JobDetail(
                     permutation_id=permutation.id,
-                    permutation_summary=permutation.summary,
+                    permutation_description=permutation.description,
                     test_case_id=test_case.id,
                     is_run_completed=False,
                     language="English",
@@ -284,7 +291,9 @@ class Runner:
                             == f"{server_url}{test_case.expected_api_used}"
                         ):
                             is_plugin_operation_found = True
-                            plugin_operation = plugin_operation.replace(server_url, "")
+                            plugin_operation = plugin_operation.replace(
+                                server_url, ""
+                            )
                             break
                     method = detected_plugin_operation.get("method")
                     plugin_parameters_mapped = detected_plugin_operation.get(
@@ -316,7 +325,7 @@ class Runner:
 
             detail = JobDetail(
                 permutation_id=permutation.id,
-                permutation_summary=permutation.summary,
+                permutation_description=permutation.description,
                 test_case_id=test_case.id,
                 is_run_completed=True,
                 language="English",
@@ -340,7 +349,7 @@ class Runner:
             logger.error(f"Error running permutation: {e} {traceback.format_exc()}")
             return JobDetail(
                 permutation_id=permutation.id,
-                permutation_summary=permutation.summary,
+                permutation_description=permutation.description,
                 test_case_id=test_case.id,
                 is_run_completed=False,
                 language="English",

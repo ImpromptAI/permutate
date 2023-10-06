@@ -294,16 +294,19 @@ class Runner:
                     )
                     expected_params = test_case.expected_parameters
                     if expected_params:
+                        expected_params = {
+                            key: value
+                            for key, value in expected_params.items()
+                            if value is not None and value != ""
+                        }
+
+                    if expected_params:
                         common_pairs = {
                             k: v
                             for k, v in plugin_parameters_mapped.items()
                             if k in expected_params
                             and str(v) == str(expected_params[k])
                         }
-                    # print("--")
-                    # print(plugin_parameters_mapped)
-                    # print(expected_params)
-                    # print(common_pairs)
                     if (
                         len(common_pairs) == len(expected_params)
                         if expected_params

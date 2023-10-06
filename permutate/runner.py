@@ -172,9 +172,7 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(
-            break_down_by_environment=False
-        ) if save_to_csv else None
+        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -219,9 +217,7 @@ class Runner:
                         ],
                         "plugin": {"manifest_url": test_plugin.manifest_url},
                         "config": config.dict(),
-                        "tool_selector_config": {
-                            "pipeline_name": permutation.strategy
-                        },
+                        "tool_selector_config": {"pipeline_name": permutation.strategy},
                         "llm": permutation.llm,
                     }
                 )
@@ -290,9 +286,7 @@ class Runner:
                             == f"{server_url}{test_case.expected_api_used}"
                         ):
                             is_plugin_operation_found = True
-                            plugin_operation = plugin_operation.replace(
-                                server_url, ""
-                            )
+                            plugin_operation = plugin_operation.replace(server_url, "")
                             break
                     method = detected_plugin_operation.get("method")
                     plugin_parameters_mapped = detected_plugin_operation.get(

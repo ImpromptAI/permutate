@@ -19,9 +19,10 @@ class Permutation(BaseModel):
             llm["model_name"] = llm["model"].lower()
         if llm.get("provider") and llm.get("provider") == "OpenAI":
             llm["provider"] = "OpenAIChat"
-        values[
-            "description"
-        ] = f"{llm.get('provider')}[{llm.get('model_name')}] - [{values.get('strategy')}]"
+
+        provider = llm.get("provider")
+        model_name = llm.get("model_name")
+        values["description"] = f"{provider}[{model_name}] - [{values.get('strategy')}]"
         return values
 
 
@@ -58,9 +59,7 @@ class Plugin(BaseModel):
     def parse_a_obj(cls, values):
         openplugin_manifest_url = values.get("manifest_url")
         openplugin_manifest_json = requests.get(openplugin_manifest_url).json()
-        openapi_json = requests.get(
-            openplugin_manifest_json["openapi_doc_url"]
-        ).json()
+        openapi_json = requests.get(openplugin_manifest_json["openapi_doc_url"]).json()
         if values.get("server_urls") is None:
             values["server_urls"] = []
         for server in openapi_json.get("servers", []):

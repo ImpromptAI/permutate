@@ -79,10 +79,7 @@ def start_test_case(request_json: dict, wsocket: WebSocket) -> Any:
             }
         )
         response_json = run_api_signature_selector(payload)
-        if (
-            response_json
-            and len(response_json.get("detected_plugin_operations")) > 0
-        ):
+        if response_json and len(response_json.get("detected_plugin_operations")) > 0:
             send_socket_message(
                 {
                     "parameters": response_json.get("detected_plugin_operations")[

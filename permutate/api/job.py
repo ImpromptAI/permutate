@@ -1,5 +1,5 @@
 import traceback
-from typing import Any
+from typing import Any, List
 
 import requests
 from fastapi import APIRouter, Depends
@@ -9,10 +9,8 @@ from fastapi.security.api_key import APIKey
 from permutate import (
     Config,
     JobRequest,
-    OperationSelectorPermutation,
+    PermutationConfig,
     Plugin,
-    PluginGroup,
-    PluginSelectorPermutation,
     Runner,
     TestCase,
 )
@@ -71,10 +69,9 @@ def start_job_s3(
 def start_job_interactive(  # noqa: F811
     config: Config,
     plugin: Plugin,
-    plugin_group: PluginGroup,
-    plugin_selector_permutation: PluginSelectorPermutation,
-    operation_selector_permutation: OperationSelectorPermutation,
+    permutation_config: PermutationConfig,
     test_case: TestCase,
+    operations: List[str] = [],
     api_key: APIKey = Depends(auth.get_api_key),
 ):
     try:
@@ -84,14 +81,9 @@ def start_job_interactive(  # noqa: F811
             name="interactive-run",
             config=config,
             test_plugin=plugin,
-            plugin_groups=[plugin_group],
-            plugin_selector_permutations=[]
-            if plugin_selector_permutation is None
-            else [plugin_selector_permutation],
-            operation_selector_permutations=[]
-            if operation_selector_permutation is None
-            else [operation_selector_permutation],
+            permutation_config=permutation_config,
             test_cases=[test_case],
+            operations=operations,
         )
         # Create a Runner instance
         runner = Runner()

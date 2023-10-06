@@ -8,19 +8,13 @@ from typing import Dict, List, Optional
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
-from permutate.job_request_schema import (
-    OperationSelectorPermutation,
-    Plugin,
-    PluginSelectorPermutation,
-)
+from permutate.job_request_schema import Plugin
 
 
 class JobDetail(BaseModel):
-    permutation_name: str
+    permutation_id: int
     permutation_summary: str
-    test_type: str
     test_case_id: str
-    test_case_name: Optional[str]
     is_run_completed: bool
     language: str
     prompt: str
@@ -39,12 +33,6 @@ class JobDetail(BaseModel):
     llm_api_cost: Optional[float]
 
     def get_tool_case_result(self):
-        if self.test_type == "plugin_selector":
-            return (
-                "Passed"
-                if self.is_plugin_detected and self.is_plugin_operation_found
-                else "Failed"
-            )
         return (
             "Passed"
             if self.is_plugin_detected
@@ -91,9 +79,7 @@ class JobSummary(BaseModel):
             total_llm_tokens_used += (
                 detail.total_llm_tokens_used if detail.total_llm_tokens_used else 0
             )
-            total_llm_api_cost += (
-                int(detail.llm_api_cost) if detail.llm_api_cost else 0
-            )
+            total_llm_api_cost += int(detail.llm_api_cost) if detail.llm_api_cost else 0
 
             passed_step_a += 1 if detail.is_plugin_detected else 0
             passed_step_b += 1 if detail.is_plugin_operation_found else 0
@@ -108,9 +94,13 @@ class JobSummary(BaseModel):
             accuracy_step_b=passed_step_b,
             accuracy_step_c=passed_step_c,
             total_run_time=round(total_run_time, 2),
-            average_response_time_sec=round(total_run_time / len(details), 2),
+            average_response_time_sec=round(total_run_time / len(details), 2)
+            if len(details) > 0
+            else 0,
             total_llm_tokens_used=total_llm_tokens_used,
-            average_llm_tokens_used=round((total_llm_tokens_used / len(details)), 2),
+            average_llm_tokens_used=round((total_llm_tokens_used / len(details)), 2)
+            if len(details) > 0
+            else 0,
             total_llm_api_cost=total_llm_api_cost,
         )
 
@@ -126,18 +116,9 @@ class JobResponse(BaseModel):
     started_on: datetime
     completed_on: datetime
     test_plugin: Plugin
-    plugin_selector_permutations: List[PluginSelectorPermutation]
-    operation_selector_permutations: List[OperationSelectorPermutation]
     summary: JobSummary
     details: List[JobDetail]
     output_directory: Optional[str]
-
-    def get_permutation_by_name(self, name: str):
-        for permutation in (
-            self.plugin_selector_permutations + self.operation_selector_permutations
-        ):
-            if permutation.name == name:
-                return permutation
 
     def group_details(self):
         details = {}
@@ -159,6 +140,7 @@ class JobResponse(BaseModel):
             test_cases[detail.test_case_name] = detail.test_type
         return test_cases
 
+    # TODO need testing after last permutation model refactoring
     def save_to_csv(self, break_down_by_environment: bool = False):
         if not break_down_by_environment:
             fieldnames = list(JobSummary.schema()["properties"].keys())
@@ -166,9 +148,7 @@ class JobResponse(BaseModel):
             with open(summary_filename, "w") as fp:
                 writer = csv.DictWriter(fp, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerow(
-                    json.loads(JobSummaryOut(**self.summary.dict()).json())
-                )
+                writer.writerow(json.loads(JobSummaryOut(**self.summary.dict()).json()))
 
             fieldnames = list(JobDetail.schema()["properties"].keys())
             detail_filename = f"{self.output_directory}{self.job_name}-details.csv"
@@ -177,15 +157,11 @@ class JobResponse(BaseModel):
                 writer.writeheader()
                 for detail in self.details:
                     writer.writerow(json.loads(JobDetail(**detail.dict()).json()))
-
             print(f"Summary csv result\n\t{summary_filename}")
             print(f"Details csv result\n\t{detail_filename}")
         else:
-            for permutation in (
-                self.plugin_selector_permutations
-                + self.operation_selector_permutations
-            ):
-                environment_name = permutation.name
+            for details in self.details:
+                environment_name = details.permutation_summary
                 fieldnames = list(JobSummary.schema()["properties"].keys())
                 summary_filename = (
                     f"{self.output_directory}{self.job_name}                   "
@@ -206,15 +182,12 @@ class JobResponse(BaseModel):
                 with open(detail_filename, "w") as fp:
                     writer = csv.DictWriter(fp, fieldnames=fieldnames)
                     writer.writeheader()
-                    for detail in self.details:
-                        if detail.permutation_name == permutation.name:
-                            writer.writerow(
-                                json.loads(JobDetail(**detail.dict()).json())
-                            )
+                    writer.writerow(json.loads(JobDetail(**detail.dict()).json()))
                 print(f"Summary csv result\n\t{summary_filename}")
                 print(f"Details csv result\n\t{detail_filename}")
 
-    def build_html_table(self) -> str:
+    # TODO need testing after last permutation model refactoring
+    def build_html_table(self):
         header = [
             "Tool Case Result",
             "Type",

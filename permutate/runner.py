@@ -10,10 +10,7 @@ import boto3
 import requests
 from dotenv import load_dotenv
 from fastapi import WebSocket
-from openplugin.utils.run_plugin_selector import (
-    run_api_signature_selector,
-    run_plugin_selector,
-)
+from openplugin.utils.run_plugin_selector import run_api_signature_selector
 from tqdm import tqdm
 
 from permutate.job_request_schema import (
@@ -21,7 +18,6 @@ from permutate.job_request_schema import (
     JobRequest,
     Permutation,
     Plugin,
-    PluginGroup,
     TestCase,
 )
 from permutate.job_response_schema import JobDetail, JobResponse, JobSummary
@@ -85,43 +81,20 @@ class Runner:
 
         batch_job_started_on = datetime.now()
 
-        all_details = []
-
-        # Get all permutations
-        test_case_permutations = []
-        p_index = 1
-        for permutation in request.operation_selector_permutations:
-            for llm in permutation.get_llms():
-                for p_group in request.plugin_groups:
-                    permutation_summary = (
-                        f"{llm.get('provider')}[{llm.get('model_name')}] -"
-                        f" [{permutation.tool_selector.pipeline_name}] "
-                        f"-PLUGIN_GROUP={p_group.name}"
-                    )
-                    test_case_permutations.append(
-                        {
-                            "permutation_index": p_index,
-                            "permutation_summary": permutation_summary,
-                            "llm": llm,
-                            "pipeline_name": (
-                                permutation.tool_selector.pipeline_name
-                            ),
-                            "plugin_group": p_group.name,
-                            "permutation_type": (permutation.get_permutation_type()),
-                        }
-                    )
-                    p_index += 1
-
         send_socket_msg(
             websocket=websocket,
             json_msg={
                 "status": "batch_job_started",
-                "permutations": test_case_permutations,
+                "permutations": [
+                    perm.dict() for perm in request.permutation_config.permutations
+                ],
                 "plugin_operation_params": get_plugin_operation_params(
                     request.test_plugin.manifest_url
                 ),
             },
         )
+
+        all_details: list = []
 
         for operation in request.operations:
             for test_case in request.test_cases:
@@ -130,8 +103,6 @@ class Runner:
                 )
                 if operation_key.lower() != operation.lower():
                     continue
-
-                permutation_index = 1
                 send_socket_msg(
                     websocket=websocket,
                     json_msg={
@@ -139,65 +110,34 @@ class Runner:
                         "test_case_id": test_case.id,
                     },
                 )
-                for permutation in request.operation_selector_permutations:
-                    permutation_details = []
-                    for llm in permutation.get_llms():
-                        if self.show_progress_bar:
-                            self.pbar.update(self.progress_counter)
-                        for p_group in request.plugin_groups:
-                            permutation_summary = (
-                                f"{llm.get('provider')}[{llm.get('model_name')}] -"
-                                f" [{permutation.tool_selector.pipeline_name}] "
-                                f"-PLUGIN_GROUP={p_group.name}"
-                            )
-                            send_socket_msg(
-                                websocket=websocket,
-                                json_msg={
-                                    "status": "permutation_started",
-                                    "test_case_id": test_case.id,
-                                    "permutation_index": permutation_index,
-                                    "permutation_summary": permutation_summary,
-                                    "llm": llm,
-                                    "pipeline_name": (
-                                        permutation.tool_selector.pipeline_name
-                                    ),
-                                    "plugin_group": p_group.name,
-                                },
-                            )
-
-                            detail = self.run_single_permutation_test_case(
-                                test_case,
-                                request.test_plugin,
-                                request.config,
-                                permutation,
-                                p_group,
-                                permutation_summary,
-                                llm,
-                            )
-                            send_socket_msg(
-                                websocket=websocket,
-                                json_msg={
-                                    "status": "permutation_ended",
-                                    "test_case_id": test_case.id,
-                                    "permutation_index": permutation_index,
-                                    "permutation_summary": permutation_summary,
-                                    "llm": llm,
-                                    "pipeline_name": (
-                                        permutation.tool_selector.pipeline_name
-                                    ),
-                                    "plugin_group": p_group.name,
-                                    "response": detail.dict(),
-                                },
-                            )
-                            permutation_index += 1
-                            permutation_details.append(detail)
-                            if SINGLE_MODE_ON:
-                                break
-                        if SINGLE_MODE_ON:
-                            break
-                    if SINGLE_MODE_ON:
-                        break
-                    all_details.extend(permutation_details)
+                for permutation in request.permutation_config.permutations:
+                    send_socket_msg(
+                        websocket=websocket,
+                        json_msg={
+                            "status": "permutation_started",
+                            "test_case_id": test_case.id,
+                            "permutation_id": permutation.id,
+                            "permutation_summary": permutation.summary,
+                            "llm": permutation.llm,
+                            "strategy": permutation.strategy,
+                        },
+                    )
+                    detail = self.run_single_permutation_test_case(
+                        test_case, request.test_plugin, request.config, permutation
+                    )
+                    send_socket_msg(
+                        websocket=websocket,
+                        json_msg={
+                            "status": "permutation_ended",
+                            "test_case_id": test_case.id,
+                            "permutation_id": permutation.id,
+                            "permutation_summary": permutation.summary,
+                            "llm": permutation.llm,
+                            "strategy": permutation.strategy,
+                            "response": detail.dict(),
+                        },
+                    )
+                    all_details.append(detail)
                 send_socket_msg(
                     websocket=websocket,
                     json_msg={
@@ -205,16 +145,12 @@ class Runner:
                         "test_case_id": test_case.id,
                     },
                 )
-                if SINGLE_MODE_ON:
-                    break
         summary = JobSummary.build_from_details(all_details)
         response = JobResponse(
             job_name=request.get_job_request_name(),
             started_on=batch_job_started_on,
             completed_on=datetime.now(),
             test_plugin=request.test_plugin,
-            plugin_selector_permutations=request.plugin_selector_permutations,
-            operation_selector_permutations=request.operation_selector_permutations,
             summary=summary,
             details=all_details,
             output_directory=output_directory,
@@ -223,9 +159,7 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(
-            break_down_by_environment=False
-        ) if save_to_csv else None
+        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -240,36 +174,28 @@ class Runner:
         test_plugin: Plugin,
         config: Config,
         permutation: Permutation,
-        plugin_group: PluginGroup,
-        permutation_summary: str,
-        llm: dict,
     ) -> JobDetail:
         try:
             # Run a single test case for a permutation
             passed = True
-            all_plugins = plugin_group.dict().get("plugins", [])
-            all_plugins.append(test_plugin.dict())
-            # Determine the type of test case
-            # (Plugin Selector or API Signature Selector)
             if config.tool_selector_endpoint is None:
-                if permutation.get_permutation_type() == "plugin_selector":
-                    lib_payload = {
-                        "messages": [
-                            {
-                                "content": test_case.prompt,
-                                "message_type": "HumanMessage",
-                            }
-                        ],
-                        "plugins": all_plugins,
-                        "config": config.dict(),
-                        "tool_selector_config": {
-                            "pipeline_name": permutation.tool_selector.pipeline_name
-                        },
-                        "llm": llm,
-                    }
-                    response_json = run_plugin_selector(lib_payload)
-                elif permutation.get_permutation_type() == "operation_selector":
-                    lib_payload = {
+                lib_payload = {
+                    "messages": [
+                        {
+                            "content": test_case.prompt,
+                            "message_type": "HumanMessage",
+                        }
+                    ],
+                    "plugin": {"manifest_url": test_plugin.manifest_url},
+                    "config": config.dict(),
+                    "tool_selector_config": {"pipeline_name": permutation.strategy},
+                    "llm": permutation.llm,
+                }
+                response_json = run_api_signature_selector(lib_payload)
+            else:
+                url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                payload_str = json.dumps(
+                    {
                         "messages": [
                             {
                                 "content": test_case.prompt,
@@ -278,55 +204,10 @@ class Runner:
                         ],
                         "plugin": {"manifest_url": test_plugin.manifest_url},
                         "config": config.dict(),
-                        "tool_selector_config": {
-                            "pipeline_name": permutation.tool_selector.pipeline_name
-                        },
-                        "llm": llm,
+                        "tool_selector_config": {"pipeline_name": permutation.strategy},
+                        "llm": permutation.llm,
                     }
-                    response_json = run_api_signature_selector(lib_payload)
-                else:
-                    raise Exception("Incorrect test case type")
-            else:
-                if permutation.get_permutation_type() == "plugin_selector":
-                    url = f"{config.tool_selector_endpoint}/api/plugin-selector"
-                    payload_str: str = json.dumps(
-                        {
-                            "messages": [
-                                {
-                                    "content": test_case.prompt,
-                                    "message_type": "HumanMessage",
-                                }
-                            ],
-                            "plugins": all_plugins,
-                            "config": config.dict(),
-                            "tool_selector_config": {
-                                "pipeline_name": permutation.tool_selector.pipeline_name
-                            },
-                            "llm": llm,
-                        }
-                    )
-                elif permutation.get_permutation_type() == "operation_selector":
-                    url = (
-                        f"{config.tool_selector_endpoint}/api/api-signature-selector"
-                    )
-                    payload_str = json.dumps(
-                        {
-                            "messages": [
-                                {
-                                    "content": test_case.prompt,
-                                    "message_type": "HumanMessage",
-                                }
-                            ],
-                            "plugin": {"manifest_url": test_plugin.manifest_url},
-                            "config": config.dict(),
-                            "tool_selector_config": {
-                                "pipeline_name": permutation.tool_selector.pipeline_name
-                            },
-                            "llm": llm,
-                        }
-                    )
-                else:
-                    raise Exception("Incorrect test case type")
+                )
 
                 headers: Dict[Any, Any] = {
                     "x-api-key": config.openplugin_api_key,
@@ -342,13 +223,11 @@ class Runner:
                 response_json = response.json()
             if not passed or response_json is None:
                 return JobDetail(
-                    permutation_name=permutation.name,
-                    permutation_summary=permutation_summary,
-                    test_type=permutation.get_permutation_type(),
-                    test_case_name=test_case.name,
+                    permutation_id=permutation.id,
+                    permutation_summary=permutation.summary,
+                    test_case_id=test_case.id,
                     is_run_completed=False,
                     language="English",
-                    test_case_id=test_case.id,
                     method=None,
                     prompt=test_case.prompt,
                     final_output="FAILED",
@@ -392,46 +271,39 @@ class Runner:
                             == f"{server_url}{test_case.expected_api_used}"
                         ):
                             is_plugin_operation_found = True
-                            plugin_operation = plugin_operation.replace(
-                                server_url, ""
-                            )
+                            plugin_operation = plugin_operation.replace(server_url, "")
                             break
                     method = detected_plugin_operation.get("method")
                     plugin_parameters_mapped = detected_plugin_operation.get(
                         "mapped_operation_parameters"
                     )
+                    expected_params = test_case.expected_parameters
+                    if expected_params:
+                        common_pairs = {
+                            k: v
+                            for k, v in plugin_parameters_mapped.items()
+                            if k in expected_params
+                            and str(v) == str(expected_params[k])
+                        }
                     if (
-                        permutation.get_permutation_type() == "operation_selector"
-                        and plugin_parameters_mapped
+                        len(common_pairs) == len(expected_params)
+                        if expected_params
+                        else 0
                     ):
-                        expected_params = test_case.expected_parameters
-                        if expected_params:
-                            common_pairs = {
-                                k: v
-                                for k, v in plugin_parameters_mapped.items()
-                                if k in expected_params
-                                and str(v) == str(expected_params[k])
-                            }
-                        if (
-                            len(common_pairs) == len(expected_params)
+                        parameter_mapped_percentage = 100
+                        is_plugin_parameter_mapped = True
+                    else:
+                        parameter_mapped_percentage = (
+                            len(common_pairs)
+                            if common_pairs
+                            else 0 / len(expected_params)
                             if expected_params
                             else 0
-                        ):
-                            parameter_mapped_percentage = 100
-                            is_plugin_parameter_mapped = True
-                        else:
-                            parameter_mapped_percentage = (
-                                len(common_pairs)
-                                if common_pairs
-                                else 0 / len(expected_params)
-                                if expected_params
-                                else 0
-                            ) * 100
+                        ) * 100
+
             detail = JobDetail(
-                permutation_name=permutation.name,
-                permutation_summary=permutation_summary,
-                test_type=permutation.get_permutation_type(),
-                test_case_name=test_case.name,
+                permutation_id=permutation.id,
+                permutation_summary=permutation.summary,
                 test_case_id=test_case.id,
                 is_run_completed=True,
                 language="English",
@@ -454,16 +326,14 @@ class Runner:
         except Exception as e:
             logger.error(f"Error running permutation: {e} {traceback.format_exc()}")
             return JobDetail(
-                permutation_name=permutation.name,
-                permutation_summary=permutation_summary,
-                test_type=permutation.get_permutation_type(),
-                test_case_name=test_case.name,
-                is_run_completed=False,
+                permutation_id=permutation.id,
+                permutation_summary=permutation.summary,
                 test_case_id=test_case.id,
+                is_run_completed=False,
                 language="English",
+                method=None,
                 prompt=test_case.prompt,
                 final_output="FAILED",
-                method=None,
                 match_score=0,
                 plugin_name=None,
                 plugin_operation=None,

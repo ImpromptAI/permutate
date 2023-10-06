@@ -1,5 +1,4 @@
 import os
-from itertools import combinations
 from typing import List, Optional
 
 import boto3
@@ -7,14 +6,7 @@ import requests
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from permutate import (
-    Config,
-    JobRequest,
-    Plugin,
-    PluginSelectorPermutation,
-    TestCase,
-    ToolSelector,
-)
+from permutate import Config, JobRequest, PermutationConfig, Plugin, TestCase
 from permutate.generate_test_cases import generate_variations
 
 load_dotenv()
@@ -76,13 +68,21 @@ class GeneratePermutations(BaseModel):
             and len(opeapi_doc_json.get("servers")) > 0
         ):
             server_endpoint = opeapi_doc_json.get("servers")[0].get("url")
-        plugin_groups = self.gen_plugin_groups()
-        plugin_permutations = self.gen_plugin_selector_permutations(plugin_groups)
+        permutation_config = self.gen_permutation_config()
         test_cases = self.gen_test_variations(openplugin_manifest_json, server_endpoint)
         name = (
             f'{openplugin_manifest_json.get("name", "").replace(" ", "_")}'
             f"_test".lower()
         )
+        operations: List[str] = []
+
+        for ops in openplugin_manifest_json.get("plugin_operations", {}).keys():
+            for method in (
+                openplugin_manifest_json.get("plugin_operations", {})
+                .get(ops, {})
+                .keys()
+            ):
+                operations.append(f"{method} {ops}")
         response = JobRequest(
             version="1.1.0",
             name=name,
@@ -94,28 +94,11 @@ class GeneratePermutations(BaseModel):
                 tool_selector_endpoint=None,
             ),
             test_plugin=Plugin(manifest_url=self.request.openplugin_manifest_url),
-            plugin_groups=plugin_groups,
-            plugin_selector_permutations=plugin_permutations,
-            operation_selector_permutations=[],
+            permutation_config=permutation_config,
             test_cases=test_cases,
+            operations=operations,
         )
         return response
-
-    def gen_plugin_groups(self) -> list:
-        plugins = [self.request.openplugin_manifest_url]
-        plugins.extend(self.request.plugin_group_manifest_urls)
-        all_combinations = []
-        index = 1
-        for r in range(1, len(plugins) + 1):
-            for pl in list(combinations(plugins, r)):
-                all_combinations.append(
-                    {
-                        "name": f"Plugin Group {index}",
-                        "plugins": [{"manifest_url": k} for k in pl],
-                    }
-                )
-                index += 1
-        return all_combinations
 
     def gen_test_variations(self, openplugin_manifest_json, server_endpoint):
         test_cases = []
@@ -161,44 +144,21 @@ class GeneratePermutations(BaseModel):
 
             return test_cases
 
-    def gen_plugin_selector_permutations(
-        self, plugin_groups
-    ) -> List[PluginSelectorPermutation]:
-        permutations = [
-            PluginSelectorPermutation(
-                name="permutation 1",
-                tool_selector=ToolSelector(
-                    pipeline_name="OAI Functions",
-                    llms=[
-                        {
-                            "provider": "OpenAIChat",
-                            "model_name": "gpt-3.5-turbo",
-                            "supported_max_tokens": 4096,
-                            "temperature": 0,
-                            "max_tokens": 1024,
-                            "top_p": 1,
-                            "frequency_penalty": 0,
-                            "presence_penalty": 0,
-                            "n": 1,
-                            "best_of": 1,
-                        },
-                        {
-                            "provider": "OpenAIChat",
-                            "model_name": "gpt-4",
-                            "supported_max_tokens": 4096,
-                            "temperature": 0,
-                            "max_tokens": 2048,
-                            "top_p": 1,
-                            "frequency_penalty": 0,
-                            "presence_penalty": 0,
-                            "n": 1,
-                            "best_of": 1,
-                        },
-                    ],
-                ),
-            )
-        ]
-        return permutations
+    def gen_permutation_config(self) -> PermutationConfig:
+        return PermutationConfig(
+            strategies=["OAI Functions"],
+            llms=[
+                {
+                    "provider": "OpenAI",
+                    "model": "gpt-4",
+                    "temperature": 0.4,
+                    "max_tokens": 1024,
+                    "top_p": 1,
+                    "frequency_penalty": 0,
+                    "presence_penalty": 0,
+                }
+            ],
+        )
 
 
 """

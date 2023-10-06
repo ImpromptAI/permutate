@@ -11,6 +11,7 @@ from permutate.api import (
     job,
     permutations,
     plugin_operation_params,
+    test_case,
     ws_job,
 )
 
@@ -42,6 +43,7 @@ def create_app() -> FastAPI:
     router.include_router(ws_job.router)
     router.include_router(generate_permutations.router)
     router.include_router(echo.router)
+    router.include_router(test_case.router)
     router.include_router(plugin_operation_params.router)
 
     # Include the main router into the FastAPI app with the specified prefix

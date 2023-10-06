@@ -206,10 +206,7 @@ class Runner:
                     "tool_selector_config": {"pipeline_name": permutation.strategy},
                     "llm": permutation.llm,
                 }
-                print("---")
-                print(lib_payload)
                 response_json = run_api_signature_selector(lib_payload)
-                print(response_json)
             else:
                 url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
                 payload_str = json.dumps(
@@ -277,6 +274,8 @@ class Runner:
                 if (
                     detected_plugin_operation.get("plugin").get("name")
                     == test_case.expected_plugin_used
+                    or detected_plugin_operation.get("plugin").get("manifest_url")
+                    == test_case.expected_plugin_used
                 ):
                     is_plugin_detected = True
                     plugin_name = detected_plugin_operation.get("plugin").get("name")
@@ -307,6 +306,10 @@ class Runner:
                             if k in expected_params
                             and str(v) == str(expected_params[k])
                         }
+                    # print("--")
+                    # print(plugin_parameters_mapped)
+                    # print(expected_params)
+                    # print(common_pairs)
                     if (
                         len(common_pairs) == len(expected_params)
                         if expected_params

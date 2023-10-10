@@ -62,6 +62,7 @@ class JobSummary(BaseModel):
     total_llm_tokens_used: int
     average_llm_tokens_used: float
     total_llm_api_cost: Optional[float]
+    permutation_description: Optional[str]
 
     @staticmethod
     def build_from_details(details: List[JobDetail]):
@@ -88,12 +89,14 @@ class JobSummary(BaseModel):
             passed_step_a += 1 if detail.is_plugin_detected else 0
             passed_step_b += 1 if detail.is_plugin_operation_found else 0
             passed_step_c += 1 if detail.is_plugin_parameter_mapped else 0
-
+        overall_accuracy = round(
+            (len(details) - total_failed_cases) / len(details) * 100, 1
+        )
         return JobSummary(
             total_test_cases=len(details),
             failed_cases=total_failed_cases,
             language="English",
-            overall_accuracy=0,
+            overall_accuracy=overall_accuracy,
             accuracy_step_a=passed_step_a,
             accuracy_step_b=passed_step_b,
             accuracy_step_c=passed_step_c,
@@ -106,6 +109,7 @@ class JobSummary(BaseModel):
             if len(details) > 0
             else 0,
             total_llm_api_cost=total_llm_api_cost,
+            permutation_description=details[0].permutation_description,
         )
 
 

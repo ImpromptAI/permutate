@@ -155,7 +155,7 @@ class Runner:
                 if detail.permutation_id == permutation.id:
                     perm_details.append(detail)
             permutation_summary[permutation.id] = JobSummary.build_from_details(
-                all_details
+                perm_details
             )
 
         operation_summary: dict[str, JobSummary] = {}

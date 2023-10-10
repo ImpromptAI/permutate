@@ -14,6 +14,8 @@ from permutate.job_request_schema import Plugin
 class JobDetail(BaseModel):
     permutation_id: int
     permutation_description: str
+    expected_api_used: Optional[str]
+    expected_method: Optional[str]
     test_case_id: str
     is_run_completed: bool
     language: str
@@ -79,7 +81,9 @@ class JobSummary(BaseModel):
             total_llm_tokens_used += (
                 detail.total_llm_tokens_used if detail.total_llm_tokens_used else 0
             )
-            total_llm_api_cost += int(detail.llm_api_cost) if detail.llm_api_cost else 0
+            total_llm_api_cost += (
+                int(detail.llm_api_cost) if detail.llm_api_cost else 0
+            )
 
             passed_step_a += 1 if detail.is_plugin_detected else 0
             passed_step_b += 1 if detail.is_plugin_operation_found else 0
@@ -117,7 +121,9 @@ class JobResponse(BaseModel):
     completed_on: datetime
     test_plugin: Plugin
     summary: JobSummary
+    operation_summary: Dict[str, JobSummary]
     permutation_summary: dict[int, JobSummary]
+    operation_permutation_summary: dict[str, dict[int, JobSummary]]
     details: List[JobDetail]
     output_directory: Optional[str]
 
@@ -149,7 +155,9 @@ class JobResponse(BaseModel):
             with open(summary_filename, "w") as fp:
                 writer = csv.DictWriter(fp, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerow(json.loads(JobSummaryOut(**self.summary.dict()).json()))
+                writer.writerow(
+                    json.loads(JobSummaryOut(**self.summary.dict()).json())
+                )
 
             fieldnames = list(JobDetail.schema()["properties"].keys())
             detail_filename = f"{self.output_directory}{self.job_name}-details.csv"

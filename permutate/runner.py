@@ -158,13 +158,41 @@ class Runner:
                 all_details
             )
 
+        operation_summary: dict[str, JobSummary] = {}
+        for operation in request.operations:
+            op_details = []
+            for detail in all_details:
+                operation_key = (
+                    f"{detail.expected_method} {detail.expected_api_used}"
+                )
+                if operation_key.lower() == operation.lower():
+                    op_details.append(detail)
+            operation_summary[operation] = JobSummary.build_from_details(op_details)
+
+        operation_permutation_summary: dict[str, dict[int, JobSummary]] = {}
+        for operation in request.operations:
+            op_perm_map: dict[int, list] = {}
+            for detail in all_details:
+                if detail.permutation_id in op_perm_map:
+                    op_perm_map[detail.permutation_id].append(detail)
+                else:
+                    op_perm_map[detail.permutation_id] = [detail]
+            oper_perm_summary_map = {}
+            for key in op_perm_map:
+                oper_perm_summary_map[key] = JobSummary.build_from_details(
+                    op_perm_map[key]
+                )
+            operation_permutation_summary[operation] = oper_perm_summary_map
+
         response = JobResponse(
             job_name=request.get_job_request_name(),
             started_on=batch_job_started_on,
             completed_on=datetime.now(),
             test_plugin=request.test_plugin,
             summary=summary,
+            operation_summary=operation_summary,
             permutation_summary=permutation_summary,
+            operation_permutation_summary=operation_permutation_summary,
             details=all_details,
             output_directory=output_directory,
         )
@@ -172,7 +200,9 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
+        response.save_to_csv(
+            break_down_by_environment=False
+        ) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -217,7 +247,9 @@ class Runner:
                         ],
                         "plugin": {"manifest_url": test_plugin.manifest_url},
                         "config": config.dict(),
-                        "tool_selector_config": {"pipeline_name": permutation.strategy},
+                        "tool_selector_config": {
+                            "pipeline_name": permutation.strategy
+                        },
                         "llm": permutation.llm,
                     }
                 )
@@ -239,6 +271,8 @@ class Runner:
                     permutation_id=permutation.id,
                     permutation_description=permutation.description,
                     test_case_id=test_case.id,
+                    expected_api_used=test_case.expected_api_used,
+                    expected_method=test_case.expected_method,
                     is_run_completed=False,
                     language="English",
                     method=None,
@@ -286,7 +320,9 @@ class Runner:
                             == f"{server_url}{test_case.expected_api_used}"
                         ):
                             is_plugin_operation_found = True
-                            plugin_operation = plugin_operation.replace(server_url, "")
+                            plugin_operation = plugin_operation.replace(
+                                server_url, ""
+                            )
                             break
                     method = detected_plugin_operation.get("method")
                     plugin_parameters_mapped = detected_plugin_operation.get(
@@ -327,6 +363,8 @@ class Runner:
                 permutation_id=permutation.id,
                 permutation_description=permutation.description,
                 test_case_id=test_case.id,
+                expected_api_used=test_case.expected_api_used,
+                expected_method=test_case.expected_method,
                 is_run_completed=True,
                 language="English",
                 prompt=test_case.prompt,
@@ -350,6 +388,8 @@ class Runner:
             return JobDetail(
                 permutation_id=permutation.id,
                 permutation_description=permutation.description,
+                expected_api_used=test_case.expected_api_used,
+                expected_method=test_case.expected_method,
                 test_case_id=test_case.id,
                 is_run_completed=False,
                 language="English",

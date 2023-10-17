@@ -26,8 +26,11 @@ def get_plugin_operation_params(url: str):
                         ]
                         for prop in parameters:
                             prop["in"] = "query"
-                            if prop.get("title"):
-                                prop["name"] = prop.get("title")
+                            # flatten schema
+                            if prop.get("schema"):
+                                for key in prop["schema"]:
+                                    prop[key] = prop["schema"][key]
+                                del prop["schema"]
                         param_map[f"{path}_{method}"] = parameters
                 elif method == "post":
                     ref = (
@@ -45,6 +48,11 @@ def get_plugin_operation_params(url: str):
                             for key in props.keys():
                                 props[key]["name"] = key
                                 props[key]["in"] = "body"
+                                # check if required
+                                if refs[ref.split("/")[-1]].get("required") and key in refs[ref.split("/")[-1]]["required"]:
+                                    props[key]["required"] = True
+                                else:
+                                    props[key]["required"] = False
                                 params.append(props[key])
                         param_map[f"{path}_{method}"] = params
         result_map: Dict[Any, Any] = {}

@@ -146,7 +146,6 @@ utils/boardreader/runner.py
 .idea/vcs.xml
 .idea/workspace.xml
 
-Dockerfile
 requirements.txt
 my_runner.py
 **/*details.csv

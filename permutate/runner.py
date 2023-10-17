@@ -39,6 +39,20 @@ def send_socket_msg(websocket: Optional[WebSocket], json_msg: dict):
         asyncio.run(websocket.send_text(json.dumps(json_msg)))
 
 
+def is_parameters_same(param1, param2):
+    if param1 == param2:
+        return True
+    if param1 is not None and param2 is not None:
+        if param1.lower() == param2.lower():
+            return True
+        if len(param1) > 2 and len(param2) > 2:
+            if param1.endswith("s") and param1[:-1].lower() == param2.lower():
+                return True
+            if param2.endswith("s") and param2[:-1].lower() == param1.lower():
+                return True
+    return False
+
+
 # Define a Runner class to handle job execution
 class Runner:
     def __init__(self, show_progress_bar: bool = True):
@@ -231,7 +245,7 @@ class Runner:
                     ],
                     "plugin": {"manifest_url": test_plugin.manifest_url},
                     "config": config.dict(),
-                    "tool_selector_config": {"pipeline_name": permutation.strategy},
+                    "pipeline_name": permutation.strategy,
                     "llm": permutation.llm,
                 }
                 response_json = run_api_signature_selector(lib_payload)
@@ -247,9 +261,7 @@ class Runner:
                         ],
                         "plugin": {"manifest_url": test_plugin.manifest_url},
                         "config": config.dict(),
-                        "tool_selector_config": {
-                            "pipeline_name": permutation.strategy
-                        },
+                        "pipeline_name": permutation.strategy,
                         "llm": permutation.llm,
                     }
                 )
@@ -301,9 +313,13 @@ class Runner:
             for detected_plugin_operation in response_json.get(
                 "detected_plugin_operations"
             ):
+                if test_case.expected_plugin_used is None:
+                    continue
                 if (
                     detected_plugin_operation.get("plugin").get("name")
                     == test_case.expected_plugin_used
+                    or detected_plugin_operation.get("plugin").get("name").lower()
+                    == test_case.expected_plugin_used.replace("_", " ").lower()
                     or detected_plugin_operation.get("plugin").get("manifest_url")
                     == test_case.expected_plugin_used
                 ):
@@ -341,7 +357,7 @@ class Runner:
                             k: v
                             for k, v in plugin_parameters_mapped.items()
                             if k in expected_params
-                            and str(v) == str(expected_params[k])
+                            and is_parameters_same(str(v), str(expected_params[k]))
                         }
                     if (
                         len(common_pairs) == len(expected_params)

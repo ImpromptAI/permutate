@@ -15,10 +15,11 @@ pyyaml = "^6.0"
 typer = { extras = ["all"], version = "^0.9.0" }
 jinja2 = "^3.1.2"
 fastapi = "^0.95.2"
-openplugin = "^0.0.24"
+openplugin = "^0.0.26"
 websockets = "^11.0.3"
 boto3 = "^1.28.43"
 colorlog = "^6.7.0"
+uvicorn = "0.22.0"
 
 
 [tool.poetry.group.dev.dependencies]

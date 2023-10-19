@@ -49,7 +49,10 @@ def get_plugin_operation_params(url: str):
                                 props[key]["name"] = key
                                 props[key]["in"] = "body"
                                 # check if required
-                                if refs[ref.split("/")[-1]].get("required") and key in refs[ref.split("/")[-1]]["required"]:
+                                if (
+                                    refs[ref.split("/")[-1]].get("required")
+                                    and key in refs[ref.split("/")[-1]]["required"]
+                                ):
                                     props[key]["required"] = True
                                 else:
                                     props[key]["required"] = False

@@ -176,9 +176,7 @@ class Runner:
         for operation in request.operations:
             op_details = []
             for detail in all_details:
-                operation_key = (
-                    f"{detail.expected_method} {detail.expected_api_used}"
-                )
+                operation_key = f"{detail.expected_method} {detail.expected_api_used}"
                 if operation_key.lower() == operation.lower():
                     op_details.append(detail)
             operation_summary[operation] = JobSummary.build_from_details(op_details)
@@ -214,9 +212,7 @@ class Runner:
             asyncio.run(websocket.send_text(response.json()))
         if self.show_progress_bar:
             self.pbar.close()
-        response.save_to_csv(
-            break_down_by_environment=False
-        ) if save_to_csv else None
+        response.save_to_csv(break_down_by_environment=False) if save_to_csv else None
         if save_to_html:
             url = response.build_html_table()
             webbrowser.open(url)
@@ -336,9 +332,7 @@ class Runner:
                             == f"{server_url}{test_case.expected_api_used}"
                         ):
                             is_plugin_operation_found = True
-                            plugin_operation = plugin_operation.replace(
-                                server_url, ""
-                            )
+                            plugin_operation = plugin_operation.replace(server_url, "")
                             break
                     method = detected_plugin_operation.get("method")
                     plugin_parameters_mapped = detected_plugin_operation.get(

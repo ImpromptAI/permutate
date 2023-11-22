@@ -22,7 +22,9 @@ class Permutation(BaseModel):
 
         provider = llm.get("provider")
         model_name = llm.get("model_name")
-        values["description"] = f"{provider}[{model_name}] - [{values.get('strategy')}]"
+        values[
+            "description"
+        ] = f"{provider}[{model_name}] - [{values.get('strategy')}]"
         return values
 
 
@@ -59,7 +61,9 @@ class Plugin(BaseModel):
     def parse_a_obj(cls, values):
         openplugin_manifest_url = values.get("manifest_url")
         openplugin_manifest_json = requests.get(openplugin_manifest_url).json()
-        openapi_json = requests.get(openplugin_manifest_json["openapi_doc_url"]).json()
+        openapi_json = requests.get(
+            openplugin_manifest_json["openapi_doc_url"]
+        ).json()
         if values.get("server_urls") is None:
             values["server_urls"] = []
         for server in openapi_json.get("servers", []):
@@ -82,6 +86,11 @@ class Config(BaseModel):
     openai_api_key: Optional[str]
     auto_translate_to_languages: List[str] = []
     tool_selector_endpoint: Optional[str]
+    cohere_api_key: Optional[str]
+    google_palm_key: Optional[str]
+    aws_access_key_id: Optional[str]
+    aws_secret_access_key: Optional[str]
+    aws_region_name: Optional[str]
 
 
 class JobRequest(YamlModel):

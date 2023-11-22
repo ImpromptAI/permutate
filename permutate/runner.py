@@ -83,8 +83,7 @@ class Runner:
         websocket: Optional[WebSocket] = None,
         save_to_s3: bool = False,
     ):
-        if request.config.openai_api_key is None:
-            raise Exception("OpenAI API key is not set")
+        logger.info(title="===", message=f"{request.config}")
         logger.info(
             title="batch job started", message=f"{request.get_job_request_name()}"
         )
@@ -236,6 +235,8 @@ class Runner:
             # Run a single test case for a permutation
             passed = True
             if config.tool_selector_endpoint is None:
+                config_val = config.dict()
+                config_val["provider"] = permutation.llm.get("provider")
                 lib_payload = {
                     "messages": [
                         {
@@ -244,7 +245,7 @@ class Runner:
                         }
                     ],
                     "plugin": {"manifest_url": test_plugin.manifest_url},
-                    "config": config.dict(),
+                    "config": config_val,
                     "pipeline_name": permutation.strategy,
                     "llm": permutation.llm,
                 }

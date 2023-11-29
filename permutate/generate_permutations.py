@@ -69,7 +69,9 @@ class GeneratePermutations(BaseModel):
         ):
             server_endpoint = opeapi_doc_json.get("servers")[0].get("url")
         permutation_config = self.gen_permutation_config()
-        test_cases = self.gen_test_variations(openplugin_manifest_json, server_endpoint)
+        test_cases = self.gen_test_variations(
+            openplugin_manifest_json, server_endpoint
+        )
         name = (
             f'{openplugin_manifest_json.get("name", "").replace(" ", "_")}'
             f"_test".lower()
@@ -127,7 +129,9 @@ class GeneratePermutations(BaseModel):
                         )
                     )
                     index = index + 1
-                    for ex in generate_variations(self.request.openai_api_key, example):
+                    for ex in generate_variations(
+                        self.request.openai_api_key, example
+                    ):
                         test_cases.append(
                             TestCase(
                                 name=f"test-case {index}",

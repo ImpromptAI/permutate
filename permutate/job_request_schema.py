@@ -24,7 +24,7 @@ class Permutation(BaseModel):
         model_name = llm.get("model_name")
         values[
             "description"
-        ] = f"{provider}[{model_name}] - [{values.get('strategy')}]"
+        ] = f"Provider={provider}, Model={model_name}, Strategy={values.get('strategy')}"
         return values
 
 

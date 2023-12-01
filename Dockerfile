@@ -12,7 +12,7 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 RUN pip install -r requirements.txt
 
-
+RUN pip install openplugin==0.0.31
 # Bundle app source code
 COPY . .
 

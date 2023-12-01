@@ -83,7 +83,7 @@ class Runner:
         websocket: Optional[WebSocket] = None,
         save_to_s3: bool = False,
     ):
-        logger.info(title="===", message=f"{request.config}")
+        logger.info(title="", message=f"{request.config}")
         logger.info(
             title="batch job started", message=f"{request.get_job_request_name()}"
         )
@@ -354,9 +354,15 @@ class Runner:
                         }
 
                     if expected_params:
+                        mapped_items = {}
+                        if (
+                            plugin_parameters_mapped
+                            and plugin_parameters_mapped.items()
+                        ):
+                            mapped_items = plugin_parameters_mapped.items()
                         common_pairs = {
                             k: v
-                            for k, v in plugin_parameters_mapped.items()
+                            for k, v in mapped_items
                             if k in expected_params
                             and is_parameters_same(str(v), str(expected_params[k]))
                         }

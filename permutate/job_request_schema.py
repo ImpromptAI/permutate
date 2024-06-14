@@ -6,50 +6,15 @@ from pydantic import BaseModel, root_validator
 from pydantic_yaml import YamlModel
 
 
-class Permutation(BaseModel):
-    id: int
-    strategy: str
-    description: str
-    llm: Dict[str, Any] = {}
-
-    @root_validator(pre=True)
-    def parse_a_obj(cls, values):
-        llm = values.get("llm")
-        if llm.get("model") and not llm.get("model_name"):
-            llm["model_name"] = llm["model"].lower()
-        if llm.get("provider") and llm.get("provider") == "OpenAI":
-            llm["provider"] = "OpenAIChat"
-
-        provider = llm.get("provider")
-        model_name = llm.get("model_name")
-        values[
-            "description"
-        ] = f"Provider={provider}, Model={model_name}, Strategy={values.get('strategy')}"
-        return values
+class FunctionProvider(BaseModel):
+    name: str
 
 
 class PermutationConfig(BaseModel):
-    strategies: List[str] = []
-    llms: List[Dict[str, Any]] = []
-    permutations: List[Permutation] = []
+    function_providers: List[FunctionProvider]
 
     @root_validator(pre=True)
     def parse_a_obj(cls, values):
-        strategies = values.get("strategies")
-        llms = values.get("llms")
-        permutations = []
-        id = 1
-        for strategy in strategies:
-            for llm in llms:
-                permutations.append(
-                    Permutation(
-                        id=id,
-                        strategy=strategy,
-                        llm=llm,
-                    )
-                )
-                id = id + 1
-        values["permutations"] = permutations
         return values
 
 
@@ -103,7 +68,7 @@ class JobRequest(YamlModel):
     operations: List[str] = []
 
     def get_total_permutations(self):
-        return len(self.permutation_config.permutations)
+        return len(self.permutation_config.function_providers)
 
     def get_job_request_name(self):
         return "{}-{}-{}".format(

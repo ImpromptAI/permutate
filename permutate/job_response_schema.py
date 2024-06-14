@@ -12,8 +12,7 @@ from permutate.job_request_schema import Plugin
 
 
 class JobDetail(BaseModel):
-    permutation_id: int
-    permutation_description: str
+    function_provider: str
     expected_api_used: Optional[str]
     expected_method: Optional[str]
     test_case_id: str
@@ -62,7 +61,6 @@ class JobSummary(BaseModel):
     total_llm_tokens_used: int
     average_llm_tokens_used: float
     total_llm_api_cost: Optional[float]
-    permutation_description: Optional[str]
 
     @staticmethod
     def build_from_details(details: List[JobDetail]):
@@ -107,7 +105,6 @@ class JobSummary(BaseModel):
             if len(details) > 0
             else 0,
             total_llm_api_cost=total_llm_api_cost,
-            permutation_description=details[0].permutation_description,
         )
 
 
@@ -124,8 +121,8 @@ class JobResponse(BaseModel):
     test_plugin: Plugin
     summary: JobSummary
     operation_summary: Dict[str, JobSummary]
-    permutation_summary: dict[int, JobSummary]
-    operation_permutation_summary: dict[str, dict[int, JobSummary]]
+    permutation_summary: dict[str, JobSummary]
+    operation_permutation_summary: dict[str, dict[str, JobSummary]]
     details: List[JobDetail]
     output_directory: Optional[str]
 
@@ -170,7 +167,7 @@ class JobResponse(BaseModel):
             print(f"Details csv result\n\t{detail_filename}")
         else:
             for details in self.details:
-                environment_name = details.permutation_description
+                environment_name = details.function_provider
                 fieldnames = list(JobSummary.schema()["properties"].keys())
                 summary_filename = (
                     f"{self.output_directory}{self.job_name}                   "
@@ -219,7 +216,7 @@ class JobResponse(BaseModel):
             rows.append(r_header)
             for detail in group_details.get(test_case_name):
                 tool_case_result = detail.get_tool_case_result()
-                permutation = self.get_permutation_by_name(detail.permutation_name)
+                permutation = self.get_permutation_by_name(detail.function_provider)
                 row = [
                     {
                         "data": tool_case_result,

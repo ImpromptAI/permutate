@@ -16,7 +16,6 @@ from tqdm import tqdm
 from permutate.job_request_schema import (
     Config,
     JobRequest,
-    Permutation,
     Plugin,
     TestCase,
 )
@@ -98,8 +97,8 @@ class Runner:
             websocket=websocket,
             json_msg={
                 "status": "batch_job_started",
-                "permutations": [
-                    perm.dict() for perm in request.permutation_config.permutations
+                "function_providers": [
+                    function_provider.dict() for function_provider in request.permutation_config.function_providers
                 ],
                 "plugin_operation_params": get_plugin_operation_params(
                     request.test_plugin.manifest_url
@@ -123,30 +122,24 @@ class Runner:
                         "test_case_id": test_case.id,
                     },
                 )
-                for permutation in request.permutation_config.permutations:
+                for function_provider in request.permutation_config.function_providers:
                     send_socket_msg(
                         websocket=websocket,
                         json_msg={
                             "status": "permutation_started",
                             "test_case_id": test_case.id,
-                            "permutation_id": permutation.id,
-                            "permutation_description": permutation.description,
-                            "llm": permutation.llm,
-                            "strategy": permutation.strategy,
+                            "function_provider": function_provider.name,
                         },
                     )
                     detail = self.run_single_permutation_test_case(
-                        test_case, request.test_plugin, request.config, permutation
+                        test_case, request.test_plugin, request.config, function_provider.name
                     )
                     send_socket_msg(
                         websocket=websocket,
                         json_msg={
                             "status": "permutation_ended",
                             "test_case_id": test_case.id,
-                            "permutation_id": permutation.id,
-                            "permutation_description": permutation.description,
-                            "llm": permutation.llm,
-                            "strategy": permutation.strategy,
+                            "function_provider": function_provider.name,
                             "response": detail.dict(),
                         },
                     )
@@ -161,13 +154,13 @@ class Runner:
         summary = JobSummary.build_from_details(all_details)
 
         # build permutation summary
-        permutation_summary: dict[int, JobSummary] = {}
-        for permutation in request.permutation_config.permutations:
+        permutation_summary: dict[str, JobSummary] = {}
+        for function_provider in request.permutation_config.function_providers:
             perm_details = []
             for detail in all_details:
-                if detail.permutation_id == permutation.id:
+                if detail.function_provider == function_provider.name:
                     perm_details.append(detail)
-            permutation_summary[permutation.id] = JobSummary.build_from_details(
+            permutation_summary[function_provider.name] = JobSummary.build_from_details(
                 perm_details
             )
 
@@ -182,14 +175,14 @@ class Runner:
                     op_details.append(detail)
             operation_summary[operation] = JobSummary.build_from_details(op_details)
 
-        operation_permutation_summary: dict[str, dict[int, JobSummary]] = {}
+        operation_permutation_summary: dict[str, dict[str, JobSummary]] = {}
         for operation in request.operations:
-            op_perm_map: dict[int, list] = {}
+            op_perm_map: dict[str, list] = {}
             for detail in all_details:
-                if detail.permutation_id in op_perm_map:
-                    op_perm_map[detail.permutation_id].append(detail)
+                if detail.function_provider in op_perm_map:
+                    op_perm_map[detail.function_provider].append(detail)
                 else:
-                    op_perm_map[detail.permutation_id] = [detail]
+                    op_perm_map[detail.function_provider] = [detail]
             oper_perm_summary_map = {}
             for key in op_perm_map:
                 oper_perm_summary_map[key] = JobSummary.build_from_details(
@@ -229,41 +222,44 @@ class Runner:
         test_case: TestCase,
         test_plugin: Plugin,
         config: Config,
-        permutation: Permutation,
+        function_provider: str,
     ) -> JobDetail:
         try:
             # Run a single test case for a permutation
             passed = True
             if config.tool_selector_endpoint is None:
-                config_val = config.dict()
-                config_val["provider"] = permutation.llm.get("provider")
-                lib_payload = {
-                    "messages": [
-                        {
-                            "content": test_case.prompt,
-                            "message_type": "HumanMessage",
-                        }
-                    ],
-                    "plugin": {"manifest_url": test_plugin.manifest_url},
-                    "config": config_val,
-                    "pipeline_name": permutation.strategy,
-                    "llm": permutation.llm,
-                }
-                response_json = run_api_signature_selector(lib_payload)
+                pass
+                # THIS IS OUTDATED, NEED TO UPDATE
+                # =================
+                # config_val = config.dict()
+                # config_val["provider"] = permutation.llm.get("provider")
+                # lib_payload = {
+                #     "messages": [
+                #         {
+                #             "content": test_case.prompt,
+                #             "message_type": "HumanMessage",
+                #         }
+                #     ],
+                #     "plugin": {"manifest_url": test_plugin.manifest_url},
+                #     "config": config_val,
+                #     "pipeline_name": permutation.strategy,
+                #     "llm": permutation.llm,
+                # }
+                # response_json = run_api_signature_selector(lib_payload)
             else:
-                url = f"{config.tool_selector_endpoint}/api/api-signature-selector"
+                print('TOOL SELECTOR ENDPOINT')
+                print(config.tool_selector_endpoint)
+                url = f"{config.tool_selector_endpoint}/api/plugin-execution-pipeline"
                 payload_str = json.dumps(
                     {
-                        "messages": [
-                            {
-                                "content": test_case.prompt,
-                                "message_type": "HumanMessage",
-                            }
-                        ],
-                        "plugin": {"manifest_url": test_plugin.manifest_url},
+                        "prompt": test_case.prompt,
+                        "conversation": [],
                         "config": config.dict(),
-                        "pipeline_name": permutation.strategy,
-                        "llm": permutation.llm,
+                        "openplugin_manifest_url": test_plugin.manifest_url,
+                        "function_provider": {
+                            "name": function_provider,
+                        },
+                        "header": {},
                     }
                 )
 
@@ -281,8 +277,7 @@ class Runner:
                 response_json = response.json()
             if not passed or response_json is None:
                 return JobDetail(
-                    permutation_id=permutation.id,
-                    permutation_description=permutation.description,
+                    function_provider=function_provider,
                     test_case_id=test_case.id,
                     expected_api_used=test_case.expected_api_used,
                     expected_method=test_case.expected_method,
@@ -383,8 +378,7 @@ class Runner:
                         ) * 100
 
             detail = JobDetail(
-                permutation_id=permutation.id,
-                permutation_description=permutation.description,
+                function_provider=function_provider,
                 test_case_id=test_case.id,
                 expected_api_used=test_case.expected_api_used,
                 expected_method=test_case.expected_method,
@@ -409,8 +403,7 @@ class Runner:
         except Exception as e:
             logger.error(f"Error running permutation: {e} {traceback.format_exc()}")
             return JobDetail(
-                permutation_id=permutation.id,
-                permutation_description=permutation.description,
+                function_provider=function_provider,
                 expected_api_used=test_case.expected_api_used,
                 expected_method=test_case.expected_method,
                 test_case_id=test_case.id,

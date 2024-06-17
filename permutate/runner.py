@@ -247,8 +247,6 @@ class Runner:
                 # }
                 # response_json = run_api_signature_selector(lib_payload)
             else:
-                print('TOOL SELECTOR ENDPOINT')
-                print(config.tool_selector_endpoint)
                 url = f"{config.tool_selector_endpoint}/api/plugin-execution-pipeline"
                 payload_str = json.dumps(
                     {
@@ -275,6 +273,7 @@ class Runner:
                 if response.status_code != 200:
                     passed = False
                 response_json = response.json()
+
             if not passed or response_json is None:
                 return JobDetail(
                     function_provider=function_provider,
@@ -306,40 +305,24 @@ class Runner:
             plugin_name = None
             plugin_parameters_mapped = None
             method = None
-            for detected_plugin_operation in response_json.get(
-                "detected_plugin_operations"
-            ):
-                if test_case.expected_plugin_used is None:
-                    continue
-                if (
-                    detected_plugin_operation.get("plugin").get("name")
-                    == test_case.expected_plugin_used
-                    or detected_plugin_operation.get("plugin").get("name").lower()
-                    == test_case.expected_plugin_used.replace("_", " ").lower()
-                    or detected_plugin_operation.get("plugin").get("manifest_url")
-                    == test_case.expected_plugin_used
-                ):
-                    is_plugin_detected = True
-                    plugin_name = detected_plugin_operation.get("plugin").get("name")
 
-                    plugin_operation = detected_plugin_operation.get("api_called")
+            api_and_signature = response_json.get("response", {}).get("api_and_signature_detection_step")
+            if api_and_signature is not None:
+                if api_and_signature.get("api_called"):
+                    is_plugin_detected = True
+                    plugin_name = test_plugin.manifest_url
+
+                    plugin_operation = api_and_signature.get("api_called")
                     if plugin_operation == test_case.expected_api_used:
                         is_plugin_operation_found = True
-
-                    for server_url in test_plugin.server_urls:
-                        if (
-                            plugin_operation
-                            == f"{server_url}{test_case.expected_api_used}"
-                        ):
-                            is_plugin_operation_found = True
-                            plugin_operation = plugin_operation.replace(
-                                server_url, ""
-                            )
-                            break
-                    method = detected_plugin_operation.get("method")
-                    plugin_parameters_mapped = detected_plugin_operation.get(
-                        "mapped_operation_parameters"
-                    )
+                    else:
+                        for server_url in test_plugin.server_urls:
+                            if plugin_operation == f"{server_url}{test_case.expected_api_used}":
+                                is_plugin_operation_found = True
+                                plugin_operation = plugin_operation.replace(server_url, "")
+                                break
+                    method = api_and_signature.get("method")
+                    plugin_parameters_mapped = api_and_signature.get("mapped_operation_parameters", {})
                     expected_params = test_case.expected_parameters
                     if expected_params:
                         expected_params = {
@@ -349,12 +332,7 @@ class Runner:
                         }
 
                     if expected_params:
-                        mapped_items = {}
-                        if (
-                            plugin_parameters_mapped
-                            and plugin_parameters_mapped.items()
-                        ):
-                            mapped_items = plugin_parameters_mapped.items()
+                        mapped_items = plugin_parameters_mapped.items()
                         common_pairs = {
                             k: v
                             for k, v in mapped_items
@@ -377,6 +355,12 @@ class Runner:
                             else 0
                         ) * 100
 
+            # final_output is expected to be a string
+            try:
+                final_output = json.dumps(response_json.get("response", {}).get("api_execution_step", {}).get("original_response"))
+            except Exception as e:
+                final_output = ""
+
             detail = JobDetail(
                 function_provider=function_provider,
                 test_case_id=test_case.id,
@@ -385,7 +369,7 @@ class Runner:
                 is_run_completed=True,
                 language="English",
                 prompt=test_case.prompt,
-                final_output=response_json.get("final_text_response"),
+                final_output=final_output,
                 match_score=0,
                 is_plugin_detected=is_plugin_detected,
                 is_plugin_operation_found=is_plugin_operation_found,
@@ -395,9 +379,18 @@ class Runner:
                 plugin_operation=plugin_operation,
                 method=method,
                 plugin_parameters_mapped=plugin_parameters_mapped,
-                response_time_sec=response_json.get("response_time"),
-                total_llm_tokens_used=response_json.get("tokens_used"),
-                llm_api_cost=response_json.get("llm_api_cost"),
+                response_time_sec=(
+                    response_json.get("metadata", {})
+                        .get("total_time_taken_seconds")
+                ),
+                total_llm_tokens_used=(
+                    response_json.get("metadata", {})
+                        .get("total_tokens_used")
+                ),
+                llm_api_cost=(
+                    response_json.get("metadata", {})
+                        .get("cost")
+                ),
             )
             return detail
         except Exception as e:

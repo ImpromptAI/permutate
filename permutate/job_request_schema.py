@@ -46,13 +46,18 @@ class TestCase(BaseModel):
 
 
 class Config(BaseModel):
-    openplugin_api_key: Optional[str]
     use_openplugin_library: bool = True
-    openai_api_key: Optional[str]
     auto_translate_to_languages: List[str] = []
     tool_selector_endpoint: Optional[str]
+    openplugin_api_key: Optional[str]
+    openai_api_key: Optional[str]
+    mistral_api_key: Optional[str]
+    groq_api_key: Optional[str]
+    anthropic_api_key: Optional[str]
     cohere_api_key: Optional[str]
-    google_palm_key: Optional[str]
+    fireworks_api_key: Optional[str]
+    together_api_key: Optional[str]
+    gemini_api_key: Optional[str]
     aws_access_key_id: Optional[str]
     aws_secret_access_key: Optional[str]
     aws_region_name: Optional[str]

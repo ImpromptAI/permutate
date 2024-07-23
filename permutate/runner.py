@@ -101,7 +101,7 @@ class Runner:
                     function_provider.dict() for function_provider in request.permutation_config.function_providers
                 ],
                 "plugin_operation_params": get_plugin_operation_params(
-                    request.test_plugin.manifest_url
+                    request.test_plugin.openapi_doc_url
                 ),
             },
         )
@@ -253,7 +253,7 @@ class Runner:
                         "prompt": test_case.prompt,
                         "conversation": [],
                         "config": config.dict(),
-                        "openplugin_manifest_url": test_plugin.manifest_url,
+                        "openapi_doc_url": test_plugin.openapi_doc_url,
                         "function_provider": {
                             "name": function_provider,
                         },

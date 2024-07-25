@@ -6,9 +6,7 @@ import requests
 
 def get_plugin_operation_params(url: str):
     try:
-        openplugin_manifest_json = requests.get(url).json()
-        openapi_doc_url = openplugin_manifest_json["openapi_doc_url"]
-        openapi_doc_json = requests.get(openapi_doc_url).json()
+        openapi_doc_json = requests.get(url).json()
 
         refs = {}
         schemas = openapi_doc_json.get("components", {}).get("schemas")
@@ -60,9 +58,9 @@ def get_plugin_operation_params(url: str):
                         param_map[f"{path}_{method}"] = params
         result_map: Dict[Any, Any] = {}
 
-        for operation in openplugin_manifest_json["plugin_operations"]:
+        for operation in openapi_doc_json["paths"]:
             result_map[operation] = {}
-            for method in openplugin_manifest_json["plugin_operations"][operation]:
+            for method in openapi_doc_json["paths"][operation]:
                 result_map[operation][method] = param_map.get(
                     f"{operation}_{method}", []
                 )

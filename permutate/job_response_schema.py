@@ -85,9 +85,11 @@ class JobSummary(BaseModel):
             passed_step_a += 1 if detail.is_plugin_detected else 0
             passed_step_b += 1 if detail.is_plugin_operation_found else 0
             passed_step_c += 1 if detail.is_plugin_parameter_mapped else 0
-        overall_accuracy = round(
-            (len(details) - total_failed_cases) / len(details) * 100, 1
-        )
+        overall_accuracy = 0.0
+        if len(details) > 0:
+            overall_accuracy = round(
+                (len(details) - total_failed_cases) / len(details) * 100, 1
+            )
         return JobSummary(
             total_test_cases=len(details),
             failed_cases=total_failed_cases,

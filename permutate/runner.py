@@ -257,7 +257,7 @@ class Runner:
                         "function_provider": {
                             "name": function_provider,
                         },
-                        "header": {},
+                        "header": config.header,
                     }
                 )
 
@@ -310,7 +310,7 @@ class Runner:
             if api_and_signature is not None:
                 if api_and_signature.get("api_called"):
                     is_plugin_detected = True
-                    plugin_name = test_plugin.manifest_url
+                    plugin_name = test_plugin.openapi_doc_url
 
                     plugin_operation = api_and_signature.get("api_called")
                     if plugin_operation == test_case.expected_api_used:

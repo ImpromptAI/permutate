@@ -58,6 +58,7 @@ class Config(BaseModel):
     aws_access_key_id: Optional[str]
     aws_secret_access_key: Optional[str]
     aws_region_name: Optional[str]
+    header: Optional[Dict[str, Any]]
 
 
 class JobRequest(YamlModel):

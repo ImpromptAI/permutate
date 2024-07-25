@@ -14,8 +14,9 @@ def get_plugin_operation_params(url: str):
             for key in schemas:
                 refs[key] = schemas[key]
 
-        param_map = {}
+        result_map: Dict[Any, Any] = {}
         for path in openapi_doc_json["paths"]:
+            result_map[path] = {}
             for method in openapi_doc_json["paths"][path]:
                 if method == "get":
                     if openapi_doc_json["paths"][path][method].get("parameters"):
@@ -29,7 +30,7 @@ def get_plugin_operation_params(url: str):
                                 for key in prop["schema"]:
                                     prop[key] = prop["schema"][key]
                                 del prop["schema"]
-                        param_map[f"{path}_{method}"] = parameters
+                        result_map[path][method] = parameters
                 elif method == "post":
                     ref = (
                         openapi_doc_json["paths"][path][method]
@@ -55,15 +56,7 @@ def get_plugin_operation_params(url: str):
                                 else:
                                     props[key]["required"] = False
                                 params.append(props[key])
-                        param_map[f"{path}_{method}"] = params
-        result_map: Dict[Any, Any] = {}
-
-        for operation in openapi_doc_json["paths"]:
-            result_map[operation] = {}
-            for method in openapi_doc_json["paths"][operation]:
-                result_map[operation][method] = param_map.get(
-                    f"{operation}_{method}", []
-                )
+                        result_map[path][method]=params
         return result_map
     except Exception:
         traceback.print_exc()

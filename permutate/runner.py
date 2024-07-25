@@ -248,6 +248,9 @@ class Runner:
                 # response_json = run_api_signature_selector(lib_payload)
             else:
                 url = f"{config.tool_selector_endpoint}/api/plugin-execution-pipeline"
+                header={}
+                if config.header:
+                    header = config.header
                 payload_str = json.dumps(
                     {
                         "prompt": test_case.prompt,
@@ -257,7 +260,7 @@ class Runner:
                         "function_provider": {
                             "name": function_provider,
                         },
-                        "header": config.header,
+                        "header": header
                     }
                 )
 
@@ -312,7 +315,7 @@ class Runner:
                     is_plugin_detected = True
                     plugin_name = test_plugin.openapi_doc_url
 
-                    plugin_operation = api_and_signature.get("api_called")
+                    plugin_operation = api_and_signature.get("path")
                     if plugin_operation == test_case.expected_api_used:
                         is_plugin_operation_found = True
                     else:
